@@ -1,0 +1,32 @@
+{
+  "name": "medaid",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MedAid — CBC blood report explainer",
+  "homepage": "https://github.com/kevinsuvarna/MedAid#readme",
+  "bugs": {
+    "url": "https://github.com/kevinsuvarna/MedAid/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kevinsuvarna/MedAid.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "next": "^14.2.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.4"
+  }
+}
