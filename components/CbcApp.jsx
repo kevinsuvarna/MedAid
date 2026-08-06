@@ -2,17 +2,30 @@
 
 import { useEffect, useState } from 'react';
 import { LANG_META, T } from '@/lib/translations';
-import { CAT_DEFS, PARAMS, SCREEN_STEP, FACTS } from '@/lib/data';
+import { CAT_DEFS, PARAMS, SCREEN_STEP, FACTS, WBC_DIFFERENTIAL, DETAILED_PARAMS } from '@/lib/data';
 import { speak, stopSpeech, startVoiceInput as startVoiceInputHelper } from '@/lib/speech';
 import PhoneFrame from '@/components/PhoneFrame';
 import LangScreen from '@/components/screens/LangScreen';
 import OpeningScreen from '@/components/screens/OpeningScreen';
+import HealthPictureScreen from '@/components/screens/HealthPictureScreen';
 import OverviewScreen from '@/components/screens/OverviewScreen';
 import ConceptScreen from '@/components/screens/ConceptScreen';
 import ResultScreen from '@/components/screens/ResultScreen';
+import WBCDifferentialScreen from '@/components/screens/WBCDifferentialScreen';
 import AskScreen from '@/components/screens/AskScreen';
 import ExplanationScreen from '@/components/screens/ExplanationScreen';
+import FollowUpsScreen from '@/components/screens/FollowUpsScreen';
 import SavedScreen from '@/components/screens/SavedScreen';
+
+const WBC_NORMAL_GREENS = ['#2ECC71', '#27AE60', '#1E8449'];
+const WBC_HIGH_COLOR = '#E74C3C';
+const WBC_LOW_COLOR = '#E67E22';
+const WBC_LOW_BG = '#FFF8E1';
+const WBC_HIGH_BG = '#FDEDEB';
+
+function fillTemplate(str, replacements) {
+  return Object.keys(replacements).reduce((acc, key) => acc.split(`{${key}}`).join(replacements[key]), str);
+}
 
 function gaugePercentFor(param) {
   const { value, low, high, flag } = param;
@@ -96,7 +109,83 @@ export default function CbcApp() {
     return byLang[cat] || [];
   }
   function askOptionTexts() {
-    return [t.askWhatMeans, t.askWhyMeasured, t.askAskDoctor, t.askOwnWords];
+    return [t.askWhatMeans, t.askWhyMeasured, t.askAskDoctor, t.askOwnWords, t.askFollowUps];
+  }
+
+  function subParamLabel(id) {
+    const map = {
+      hb: t.hbLabel,
+      rbcCount: t.labelRbcCount,
+      mcv: t.labelMcv,
+      totalWbc: t.labelTotalWbc,
+      neutrophils: t.labelNeutrophils,
+      lymphocytes: t.labelLymphocytes,
+      platelets: t.pltLabel,
+      mpv: t.labelMpv,
+      monocytes: t.labelMonocytes,
+      eosinophils: t.labelEosinophils,
+      basophils: t.labelBasophils,
+    };
+    return map[id] || id;
+  }
+
+  function formatValueUnit(value, unit) {
+    return unit === '%' ? `${value}%` : `${value} ${unit}`;
+  }
+
+  function healthPictureTier() {
+    const abnormalCount = CAT_DEFS.filter((c) => PARAMS[c.id].flag !== 'within').length;
+    if (abnormalCount === 0) return 'green';
+    if (abnormalCount <= 2) return 'amber';
+    return 'red';
+  }
+
+  function healthPictureBulletText(id) {
+    const flag = PARAMS[id].flag;
+    const name = categoryName(id);
+    if (flag === 'within') return fillTemplate(t.healthPicNormalLine, { name });
+    return fillTemplate(t.healthPicAbnormalLine, { name, flag: t[flag] });
+  }
+
+  function healthPictureSummaryLine(tier) {
+    if (tier === 'green') return t.healthPicSummaryGreen;
+    if (tier === 'amber') return t.healthPicSummaryAmber;
+    return t.healthPicSummaryRed;
+  }
+
+  function healthPictureNarrationText() {
+    const tier = healthPictureTier();
+    const bullets = CAT_DEFS.map((c) => healthPictureBulletText(c.id));
+    return [t.healthPicGreeting, healthPictureSummaryLine(tier), ...bullets].join('. ');
+  }
+
+  function wbcDifferentialNarrationText() {
+    const lines = WBC_DIFFERENTIAL.map((seg) => {
+      const name = subParamLabel(seg.id);
+      if (seg.flag === 'within') return `${name} ${seg.value}%`;
+      const word = seg.flag === 'above' ? t.wbcDiffHighWord : t.wbcDiffLowWord;
+      return `${name} ${seg.value}% ${word}`;
+    });
+    return [t.wbcDiffTitle, t.wbcDiffSubtitle, ...lines].join('. ');
+  }
+
+  function followUpsSectionsData() {
+    return [
+      {
+        id: 'tests',
+        icon: '🧪',
+        heading: t.followUpsTestsHeading,
+        items: [t.followUpsTest1, t.followUpsTest2],
+        disclaimer: t.followUpsDisclaimer,
+      },
+      { id: 'newTests', icon: '🔬', heading: t.followUpsNewTestsHeading, items: [t.followUpsNewTest1, t.followUpsNewTest2] },
+      { id: 'who', icon: '👨‍⚕️', heading: t.followUpsWhoHeading, items: [t.followUpsWho1, t.followUpsWho2] },
+    ];
+  }
+
+  function followUpsNarrationText() {
+    const sections = followUpsSectionsData();
+    return [t.followUpsTitle, ...sections.flatMap((s) => [s.heading, ...s.items])].join('. ');
   }
 
   function narrateOverviewSequence(i) {
@@ -123,6 +212,8 @@ export default function CbcApp() {
     if (!audioMode) return;
     if (screen === 'opening') {
       speak(t.greeting + '. ' + t.openingLine, lang.code);
+    } else if (screen === 'healthPicture') {
+      speak(healthPictureNarrationText(), lang.code);
     } else if (screen === 'overview') {
       narrateOverviewSequence(0);
     } else if (screen === 'concept') {
@@ -134,6 +225,10 @@ export default function CbcApp() {
     } else if (screen === 'explanation') {
       const facts = factsFor(category);
       speak([t.explanationTitle, paramLabelText(category), ...facts.map((f) => f.text)].join('. '), lang.code);
+    } else if (screen === 'wbcDifferential') {
+      speak(wbcDifferentialNarrationText(), lang.code);
+    } else if (screen === 'followUps') {
+      speak(followUpsNarrationText(), lang.code);
     } else if (screen === 'saved') {
       speak(t.savedHeading + '. ' + t.savedBody, lang.code);
     }
@@ -158,6 +253,9 @@ export default function CbcApp() {
     setScreen('opening');
   }
   function exploreReport() {
+    setScreen('healthPicture');
+  }
+  function goToOverview() {
     setScreen('overview');
   }
   function listenToReport() {
@@ -195,6 +293,16 @@ export default function CbcApp() {
   }
   function goToExplanation() {
     setScreen('explanation');
+  }
+  function goToWbcDifferential() {
+    setScreen('wbcDifferential');
+  }
+  function goToFollowUps() {
+    setScreen('followUps');
+  }
+  function goToResultDirect(id) {
+    setCategory(id);
+    setScreen('result');
   }
   function exploreAnotherPart() {
     setScreen('overview');
@@ -278,6 +386,7 @@ export default function CbcApp() {
     { icon: '💬', label: t.askWhyMeasured, onClick: () => speak(t.askWhyMeasured, lang.code), showSpeaker: true, speakText: t.askWhyMeasured },
     { icon: '💬', label: t.askAskDoctor, onClick: () => speak(t.askAskDoctor, lang.code), showSpeaker: true, speakText: t.askAskDoctor },
     { icon: '🎙️', label: t.askOwnWords, onClick: () => handleStartVoiceInput(), showSpeaker: false, speakText: t.askOwnWords },
+    { icon: '📋', label: t.askFollowUps, onClick: () => goToFollowUps(), showSpeaker: true, speakText: t.askFollowUps },
   ];
   const askOptions = askOptionDefs.map((o, i) => ({
     icon: o.icon,
@@ -303,6 +412,73 @@ export default function CbcApp() {
   const numbersToggleLabel = showNumbers ? t.hideNumbers : t.seeNumbers;
   const showAskTranscript = askListening || !!askTranscript;
 
+  let greenIdx = 0;
+  const wbcDifferentialSegments = WBC_DIFFERENTIAL.map((seg) => {
+    const name = subParamLabel(seg.id);
+    let color;
+    if (seg.flag === 'within') {
+      color = WBC_NORMAL_GREENS[greenIdx % WBC_NORMAL_GREENS.length];
+      greenIdx += 1;
+    } else {
+      color = seg.flag === 'above' ? WBC_HIGH_COLOR : WBC_LOW_COLOR;
+    }
+    const suffix = seg.flag === 'above' ? ' (↑)' : seg.flag === 'below' ? ' (↓)' : '';
+    return { id: seg.id, label: `${name} ${seg.value}%${suffix}`, value: seg.value, color };
+  });
+
+  const wbcAbnormalRows = WBC_DIFFERENTIAL.filter((seg) => seg.flag !== 'within').map((seg) => {
+    const isHigh = seg.flag === 'above';
+    return {
+      id: seg.id,
+      dot: isHigh ? '🔴' : '🟡',
+      name: subParamLabel(seg.id),
+      valueLine: `${seg.value}% (${isHigh ? t.wbcDiffHighWord : t.wbcDiffLowWord})`,
+      rangeLine: `${t.wbcDiffNormalWord} ${seg.low}–${seg.high}%`,
+      color: isHigh ? WBC_HIGH_COLOR : WBC_LOW_COLOR,
+      bg: isHigh ? WBC_HIGH_BG : WBC_LOW_BG,
+    };
+  });
+
+  const healthPicTier = healthPictureTier();
+  const healthPicStatusColors = {
+    green: { bg: '#E8F5E9', border: '#27AE60' },
+    amber: { bg: '#FFF8E1', border: '#F39C12' },
+    red: { bg: '#FFEBEE', border: '#E74C3C' },
+  }[healthPicTier];
+  const healthPicBullets = CAT_DEFS.map((c) => ({
+    id: c.id,
+    icon: PARAMS[c.id].flag === 'within' ? '✓' : '⚠',
+    text: healthPictureBulletText(c.id),
+  }));
+
+  const detailedParamGroups = CAT_DEFS.map((c) => {
+    const pills = DETAILED_PARAMS[c.id].map((p) => ({
+      id: p.id,
+      label: subParamLabel(p.id),
+      value: formatValueUnit(p.value, p.unit),
+      rangeLine: `${p.low}–${p.high}${p.unit === '%' ? '%' : ' ' + p.unit}`,
+      flag: p.flag,
+      barColor: p.flag === 'within' ? '#4CAF50' : '#F44336',
+      onClick: () => goToResultDirect(c.id),
+    }));
+    const abnormalInGroup = pills.filter((p) => p.flag !== 'within').length;
+    const borderColor = abnormalInGroup === 0 ? '#4CAF50' : abnormalInGroup === 1 ? '#FFC107' : '#F44336';
+    const caption = c.id === 'rbc' ? t.captionRbc : c.id === 'wbc' ? t.captionWbc : t.captionPlt;
+    return { id: c.id, caption, borderColor, pills };
+  });
+
+  const radialCategories = CAT_DEFS.map((c) => ({
+    id: c.id,
+    shortLabel: c.id.toUpperCase(),
+    statusColor: flagColorFor(PARAMS[c.id].flag),
+    onClick: () => selectCategory(c.id),
+  }));
+
+  const followUpsSections = followUpsSectionsData().map((section) => ({
+    ...section,
+    speak: () => speak([section.heading, ...section.items].join('. '), lang.code),
+  }));
+
   return (
     <PhoneFrame showProgress={screen !== 'lang'} progressSteps={progressSteps}>
       {screen === 'lang' && <LangScreen languages={languages} />}
@@ -314,6 +490,22 @@ export default function CbcApp() {
           patientReportLabel={t.patientReportLabel}
           exploreReport={exploreReport}
           listenToReport={listenToReport}
+        />
+      )}
+
+      {screen === 'healthPicture' && (
+        <HealthPictureScreen
+          t={t}
+          statusTier={healthPicTier}
+          statusBg={healthPicStatusColors.bg}
+          statusBorder={healthPicStatusColors.border}
+          greeting={t.healthPicGreeting}
+          summaryLine={healthPictureSummaryLine(healthPicTier)}
+          bulletLines={healthPicBullets}
+          paramGroups={detailedParamGroups}
+          centerLabel={t.healthPicReportCenterLabel}
+          radialCategories={radialCategories}
+          goToOverview={goToOverview}
         />
       )}
 
@@ -350,6 +542,20 @@ export default function CbcApp() {
           paramRangeLine={paramRangeLine}
           goToAsk={goToAsk}
           goToSaved={goToSaved}
+          showWbcBreakdown={category === 'wbc'}
+          goToWbcBreakdown={goToWbcDifferential}
+        />
+      )}
+
+      {screen === 'wbcDifferential' && (
+        <WBCDifferentialScreen
+          backToResult={backToResult}
+          t={t}
+          segments={wbcDifferentialSegments}
+          centerLabel={t.wbcDiffCenterLabel}
+          abnormalRows={wbcAbnormalRows}
+          feedbackGiven={feedbackGiven}
+          giveFeedback={giveFeedback}
         />
       )}
 
@@ -364,6 +570,8 @@ export default function CbcApp() {
           askVoiceUnavailable={askVoiceUnavailable}
         />
       )}
+
+      {screen === 'followUps' && <FollowUpsScreen backToAsk={backToAsk} t={t} sections={followUpsSections} />}
 
       {screen === 'explanation' && (
         <ExplanationScreen

@@ -15,6 +15,8 @@ export default function ResultScreen({
   paramRangeLine,
   goToAsk,
   goToSaved,
+  showWbcBreakdown,
+  goToWbcBreakdown,
 }) {
   return (
     <div className="flex flex-col flex-1 pt-4 px-[22px] pb-[22px]" style={{ animation: 'fadeIn 0.3s ease' }}>
@@ -89,6 +91,15 @@ export default function ResultScreen({
           🔖 {t.saveForLater}
         </button>
       </div>
+
+      {showWbcBreakdown && (
+        <button
+          className="w-full mt-3 bg-[#F9F3EF] text-[#9E8A7D] border-[1.5px] border-[#F0DCD3] rounded-[27px] px-[10px] py-[15px] text-[14px] font-bold cursor-pointer min-h-[52px] flex items-center justify-center gap-[6px]"
+          onClick={goToWbcBreakdown}
+        >
+          📊 {t.seeBreakdown}
+        </button>
+      )}
     </div>
   );
 }
