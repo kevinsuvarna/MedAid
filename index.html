@@ -23,6 +23,7 @@
   @keyframes dashFlow { to { stroke-dashoffset: -40; } }
   @keyframes fadeIn { from{ opacity:0; transform: translateY(8px); } to{ opacity:1; transform: translateY(0); } }
   @keyframes ringPulse { 0%,100%{ opacity:0.6; transform:scale(1); } 50%{ opacity:0; transform:scale(1.35); } }
+  @keyframes savedPop { 0%{ transform:scale(0); opacity:0; } 60%{ transform:scale(1.12); opacity:1; } 100%{ transform:scale(1); opacity:1; } }
 </style>
 </helmet>
 
@@ -195,6 +196,112 @@
       </div>
 
       <div style="flex:1;"></div>
+      <div style="display:flex;gap:12px;">
+        <button style="flex:1;background:transparent;color:#C0392B;border:1.5px solid #F0DCD3;border-radius:27px;padding:15px 10px;font-size:14px;font-weight:700;cursor:pointer;min-height:52px;display:flex;align-items:center;justify-content:center;gap:6px;" onClick="{{ goToAsk }}">💬 {{ t.askAboutThis }}</button>
+        <button style="flex:1;background:transparent;color:#C0392B;border:1.5px solid #F0DCD3;border-radius:27px;padding:15px 10px;font-size:14px;font-weight:700;cursor:pointer;min-height:52px;display:flex;align-items:center;justify-content:center;gap:6px;" onClick="{{ goToSaved }}">🔖 {{ t.saveForLater }}</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isAsk }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;flex:1;padding:16px 22px 22px;animation:fadeIn 0.3s ease;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="font-size:24px;color:#6B7280;cursor:pointer;padding:4px;" onClick="{{ backToResult }}">‹</div>
+        <div style="font-size:19px;font-weight:800;color:#1A1A2E;">{{ t.askTitle }}</div>
+      </div>
+      <div style="font-size:14px;color:#9CA3AF;margin-top:6px;margin-left:38px;font-weight:500;">{{ t.askSubtitle }}</div>
+
+      <div style="display:flex;flex-direction:column;gap:12px;margin-top:22px;">
+        <sc-for list="{{ askOptions }}" as="opt" hint-placeholder-count="4">
+          <div style="display:flex;align-items:center;gap:12px;background:#FFFFFF;border-radius:18px;padding:16px 18px;cursor:pointer;box-shadow:{{ opt.shadow }};border:{{ opt.border }};" onClick="{{ opt.onClick }}">
+            <span style="font-size:19px;">{{ opt.icon }}</span>
+            <span style="flex:1;font-size:15px;font-weight:700;color:#1A1A2E;">{{ opt.label }}</span>
+            <sc-if value="{{ opt.showSpeaker }}" hint-placeholder-val="{{ true }}">
+              <div style="width:36px;height:36px;border-radius:50%;background:#FBE4DA;display:flex;align-items:center;justify-content:center;flex-shrink:0;" onClick="{{ opt.speak }}">
+                <span style="font-size:15px;">🔊</span>
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+
+      <sc-if value="{{ showAskTranscript }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-top:16px;">
+          <input type="text" value="{{ askTranscript }}" onChange="{{ onAskTranscriptChange }}" placeholder="{{ t.askListeningLabel }}" style="width:100%;background:#FFFFFF;border:1.5px solid #F0DCD3;border-radius:16px;padding:14px 16px;font-size:14px;color:#1A1A2E;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,0.06);" />
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ askVoiceUnavailable }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-top:14px;text-align:center;font-size:13px;color:#9CA3AF;font-weight:600;">{{ t.askVoiceUnavailableMsg }}</div>
+      </sc-if>
+
+      <div style="flex:1;"></div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isExplanation }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;flex:1;padding:16px 22px 22px;animation:fadeIn 0.3s ease;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="font-size:24px;color:#6B7280;cursor:pointer;padding:4px;" onClick="{{ backToAsk }}">‹</div>
+        <div style="font-size:19px;font-weight:800;color:#1A1A2E;">{{ t.explanationTitle }}</div>
+      </div>
+      <div style="font-size:14.5px;color:#6B7280;margin-top:6px;margin-left:38px;font-weight:700;">{{ explanationParamLabel }}</div>
+
+      <div style="display:flex;flex-direction:column;gap:12px;margin-top:20px;">
+        <sc-for list="{{ explanationFacts }}" as="fact" hint-placeholder-count="3">
+          <div style="display:flex;align-items:flex-start;gap:14px;background:#FFFFFF;border-radius:18px;padding:16px 18px;box-shadow:0 4px 16px rgba(0,0,0,0.08);">
+            <span style="font-size:20px;flex-shrink:0;">{{ fact.icon }}</span>
+            <span style="font-size:14.5px;color:#1A1A2E;font-weight:600;line-height:1.5;">{{ fact.text }}</span>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="display:flex;justify-content:center;align-items:center;margin-top:18px;padding:18px 8px;border-radius:20px;background:#FFFFFF;box-shadow:0 4px 16px rgba(0,0,0,0.08);">
+        {{ explanationDiagram }}
+      </div>
+
+      <div style="margin-top:20px;">
+        <button style="width:100%;background:#F9F3EF;color:#9E8A7D;border:1.5px solid #F0DCD3;border-radius:16px;padding:15px;font-size:13.5px;font-weight:700;cursor:default;">{{ t.explanationDoctorCta }}</button>
+      </div>
+
+      <sc-if value="{{ !feedbackGiven }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-top:18px;">
+          <span style="font-size:13.5px;color:#6B7280;font-weight:600;">{{ t.feedbackQuestion }}</span>
+          <span style="font-size:19px;cursor:pointer;" onClick="{{ giveFeedback }}">👍</span>
+          <span style="font-size:19px;cursor:pointer;" onClick="{{ giveFeedback }}">👎</span>
+        </div>
+      </sc-if>
+      <sc-if value="{{ feedbackGiven }}" hint-placeholder-val="{{ false }}">
+        <div style="text-align:center;font-size:13.5px;color:#27AE60;font-weight:700;margin-top:18px;">{{ t.feedbackThanks }}</div>
+      </sc-if>
+
+      <div style="flex:1;"></div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isSaved }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;flex:1;padding:20px 22px 22px;align-items:center;justify-content:center;text-align:center;animation:fadeIn 0.3s ease;">
+      <div style="width:96px;height:96px;border-radius:50%;background:#E9F7EF;display:flex;align-items:center;justify-content:center;animation:savedPop 0.45s cubic-bezier(0.34,1.56,0.64,1);">
+        <svg width="52" height="52" viewBox="0 0 52 52">
+          <circle cx="26" cy="26" r="24" fill="none" stroke="#27AE60" stroke-width="3"></circle>
+          <path d="M15 27 L22 34 L37 18" fill="none" stroke="#27AE60" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path>
+        </svg>
+      </div>
+      <div style="font-size:24px;font-weight:800;color:#1A1A2E;margin-top:20px;">{{ t.savedHeading }}</div>
+      <div style="font-size:14.5px;color:#6B7280;margin-top:8px;max-width:260px;font-weight:500;line-height:1.5;">{{ t.savedBody }}</div>
+
+      <div style="width:100%;margin-top:28px;">
+        <button style="width:100%;background:#C0392B;color:#FFF;border:none;border-radius:27px;padding:16px;font-size:16px;font-weight:700;cursor:pointer;min-height:54px;box-shadow:0 6px 18px rgba(192,57,43,0.32);" onClick="{{ exploreAnotherPart }}">{{ t.exploreAnotherCta }}</button>
+      </div>
+
+      <div style="display:flex;gap:10px;width:100%;margin-top:16px;">
+        <sc-for list="{{ savedCategoryCards }}" as="card" hint-placeholder-count="3">
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;background:{{ card.bg }};border-radius:16px;padding:14px 8px;cursor:pointer;" onClick="{{ card.select }}">
+            <span style="font-size:20px;">{{ card.icon }}</span>
+            <span style="font-size:11.5px;font-weight:700;color:{{ card.accent }};text-align:center;">{{ card.label }}</span>
+          </div>
+        </sc-for>
+      </div>
     </div>
   </sc-if>
 
@@ -227,6 +334,18 @@ const T = {
     below: 'below', within: 'within', above: 'above',
     explainThis: 'Explain this', seeNumbers: 'See actual numbers ↓', hideNumbers: 'Hide numbers ↑',
     lab: 'Laboratory reference', lower: 'Lower', higher: 'Higher',
+    askAboutThis: 'Ask about this', saveForLater: 'Save for later',
+    askTitle: 'What would you like to know?', askSubtitle: 'Tap or listen to a question',
+    askWhatMeans: 'What does this mean?', askWhyMeasured: 'Why is it measured?',
+    askAskDoctor: 'What should I ask my doctor?', askOwnWords: 'Ask in my own words (tap and speak)',
+    askListeningLabel: 'Listening…', askVoiceUnavailableMsg: 'Voice input not available on this device.',
+    hbLabel: 'Haemoglobin', wbcLabel: 'White Blood Cells', pltLabel: 'Platelets',
+    explanationTitle: 'What does this mean?',
+    explanationDoctorCta: 'Talk to your doctor to know what is right for you',
+    feedbackQuestion: 'Was this helpful?', feedbackThanks: 'Thank you for your feedback ✓',
+    savedHeading: 'Saved!', savedBody: 'You can return to this explanation any time from this report.',
+    exploreAnotherCta: 'Explore another part →',
+    labelRed: 'Red', labelBlue: 'Blue', labelPurple: 'Purple',
   },
   hi: {
     greeting: 'नमस्ते, रवि', openingLine: 'यह आपकी ब्लड रिपोर्ट है। आइए इसे साथ में समझें।',
@@ -244,6 +363,18 @@ const T = {
     below: 'कम', within: 'सामान्य', above: 'अधिक',
     explainThis: 'इसे समझाएं', seeNumbers: 'वास्तविक आंकड़े देखें ↓', hideNumbers: 'आंकड़े छिपाएं ↑',
     lab: 'प्रयोगशाला संदर्भ', lower: 'कम', higher: 'अधिक',
+    askAboutThis: 'इसके बारे में पूछें', saveForLater: 'बाद के लिए सहेजें',
+    askTitle: 'आप क्या जानना चाहेंगे?', askSubtitle: 'किसी प्रश्न पर दबाएँ या सुनें',
+    askWhatMeans: 'इसका क्या मतलब है?', askWhyMeasured: 'इसे क्यों मापा जाता है?',
+    askAskDoctor: 'मुझे अपने डॉक्टर से क्या पूछना चाहिए?', askOwnWords: 'अपने शब्दों में पूछें (दबाएँ और बोलें)',
+    askListeningLabel: 'सुन रहा है…', askVoiceUnavailableMsg: 'इस डिवाइस पर आवाज़ इनपुट उपलब्ध नहीं है।',
+    hbLabel: 'हीमोग्लोबिन', wbcLabel: 'श्वेत रक्त कोशिकाएं', pltLabel: 'प्लेटलेट्स',
+    explanationTitle: 'इसका क्या मतलब है?',
+    explanationDoctorCta: 'आपके लिए क्या सही है यह जानने के लिए अपने डॉक्टर से बात करें',
+    feedbackQuestion: 'क्या यह सहायक था?', feedbackThanks: 'आपकी प्रतिक्रिया के लिए धन्यवाद ✓',
+    savedHeading: 'सहेजा गया!', savedBody: 'आप कभी भी इस रिपोर्ट से इस व्याख्या पर वापस आ सकते हैं।',
+    exploreAnotherCta: 'दूसरा भाग देखें →',
+    labelRed: 'लाल', labelBlue: 'नीला', labelPurple: 'बैंगनी',
   },
   te: {
     greeting: 'నమస్తే, రవి', openingLine: 'ఇది మీ బ్లడ్ రిపోర్ట్. దీన్ని కలిసి అర్థం చేసుకుందాం.',
@@ -261,6 +392,18 @@ const T = {
     below: 'తక్కువ', within: 'సాధారణం', above: 'ఎక్కువ',
     explainThis: 'వివరించండి', seeNumbers: 'వాస్తవ సంఖ్యలు చూడండి ↓', hideNumbers: 'సంఖ్యలు దాచండి ↑',
     lab: 'ప్రయోగశాల సూచన', lower: 'తక్కువ', higher: 'ఎక్కువ',
+    askAboutThis: 'దీని గురించి అడగండి', saveForLater: 'తర్వాత కోసం సేవ్ చేయండి',
+    askTitle: 'మీరు ఏమి తెలుసుకోవాలనుకుంటున్నారు?', askSubtitle: 'ప్రశ్నను నొక్కండి లేదా వినండి',
+    askWhatMeans: 'దీని అర్థం ఏమిటి?', askWhyMeasured: 'దీన్ని ఎందుకు కొలుస్తారు?',
+    askAskDoctor: 'నేను నా వైద్యుడిని ఏమి అడగాలి?', askOwnWords: 'మీ మాటల్లో అడగండి (నొక్కి మాట్లాడండి)',
+    askListeningLabel: 'వింటోంది…', askVoiceUnavailableMsg: 'ఈ పరికరంలో వాయిస్ ఇన్‌పుట్ అందుబాటులో లేదు.',
+    hbLabel: 'హీమోగ్లోబిన్', wbcLabel: 'తెల్ల రక్త కణాలు', pltLabel: 'ప్లేట్‌లెట్స్',
+    explanationTitle: 'దీని అర్థం ఏమిటి?',
+    explanationDoctorCta: 'మీకు ఏది సరైనదో తెలుసుకోవడానికి మీ వైద్యుడితో మాట్లాడండి',
+    feedbackQuestion: 'ఇది సహాయకరంగా ఉందా?', feedbackThanks: 'మీ అభిప్రాయానికి ధన్యవాదాలు ✓',
+    savedHeading: 'సేవ్ చేయబడింది!', savedBody: 'మీరు ఈ నివేదిక నుండి ఎప్పుడైనా ఈ వివరణకు తిరిగి రావచ్చు.',
+    exploreAnotherCta: 'మరో భాగాన్ని అన్వేషించండి →',
+    labelRed: 'ఎరుపు', labelBlue: 'నీలం', labelPurple: 'ఊదా',
   },
 };
 
@@ -276,7 +419,67 @@ const PARAMS = {
   plt: { key: 'plt', value: 210, unit: '×10³/µL', low: 150, high: 400, flag: 'within' },
 };
 
-const SCREEN_STEP = { opening: 0, overview: 1, concept: 2, result: 3 };
+const SCREEN_STEP = { opening: 0, overview: 1, concept: 2, result: 3, ask: 3, explanation: 3, saved: 3 };
+
+const FACTS = {
+  en: {
+    rbc: [
+      { icon: '🩸', text: 'Haemoglobin carries oxygen from your lungs to your body.' },
+      { icon: '⚡', text: 'Low levels can make you feel tired or short of breath.' },
+      { icon: '🥗', text: 'Iron-rich foods like spinach and lentils may help.' },
+    ],
+    wbc: [
+      { icon: '🛡️', text: 'White blood cells help your body fight germs and infections.' },
+      { icon: '⚡', text: 'Low levels can make it harder to fight illness.' },
+      { icon: '🍊', text: 'Rest, hygiene and a balanced diet support your immune system.' },
+    ],
+    plt: [
+      { icon: '🩹', text: 'Platelets help your blood clot and stop bleeding.' },
+      { icon: '⚡', text: 'Low levels can cause easy bruising or bleeding.' },
+      { icon: '🥦', text: 'Folate-rich foods like leafy greens may help.' },
+    ],
+  },
+  hi: {
+    rbc: [
+      { icon: '🩸', text: 'हीमोग्लोबिन आपके फेफड़ों से शरीर तक ऑक्सीजन ले जाता है।' },
+      { icon: '⚡', text: 'कम स्तर होने पर आपको थकान या सांस फूलने जैसा महसूस हो सकता है।' },
+      { icon: '🥗', text: 'पालक और दाल जैसे आयरन युक्त खाद्य पदार्थ मदद कर सकते हैं।' },
+    ],
+    wbc: [
+      { icon: '🛡️', text: 'श्वेत रक्त कोशिकाएं आपके शरीर को कीटाणुओं और संक्रमणों से लड़ने में मदद करती हैं।' },
+      { icon: '⚡', text: 'कम स्तर होने पर बीमारी से लड़ना मुश्किल हो सकता है।' },
+      { icon: '🍊', text: 'आराम, स्वच्छता और संतुलित आहार आपकी प्रतिरक्षा प्रणाली को सहायता देते हैं।' },
+    ],
+    plt: [
+      { icon: '🩹', text: 'प्लेटलेट्स आपके खून का थक्का बनाने और रक्तस्राव रोकने में मदद करते हैं।' },
+      { icon: '⚡', text: 'कम स्तर होने पर आसानी से चोट या रक्तस्राव हो सकता है।' },
+      { icon: '🥦', text: 'पत्तेदार सब्जियों जैसे फोलेट युक्त खाद्य पदार्थ मदद कर सकते हैं।' },
+    ],
+  },
+  te: {
+    rbc: [
+      { icon: '🩸', text: 'హీమోగ్లోబిన్ మీ ఊపిరితిత్తుల నుండి శరీరానికి ఆక్సిజన్‌ను తీసుకువెళ్తుంది.' },
+      { icon: '⚡', text: 'తక్కువ స్థాయిలు మిమ్మల్ని అలసటగా లేదా ఊపిరి ఆడకుండా అనిపించవచ్చు.' },
+      { icon: '🥗', text: 'పాలకూర, పప్పుధాన్యాల వంటి ఐరన్ అధికంగా ఉండే ఆహారాలు సహాయపడవచ్చు.' },
+    ],
+    wbc: [
+      { icon: '🛡️', text: 'తెల్ల రక్త కణాలు మీ శరీరం సూక్ష్మజీవులు మరియు ఇన్‌ఫెక్షన్లతో పోరాడటానికి సహాయపడతాయి.' },
+      { icon: '⚡', text: 'తక్కువ స్థాయిలు వ్యాధులతో పోరాడటం కష్టతరం చేయవచ్చు.' },
+      { icon: '🍊', text: 'విశ్రాంతి, పరిశుభ్రత మరియు సమతుల్య ఆహారం మీ రోగనిరోధక వ్యవస్థకు మద్దతు ఇస్తాయి.' },
+    ],
+    plt: [
+      { icon: '🩹', text: 'ప్లేట్‌లెట్స్ మీ రక్తం గడ్డకట్టడానికి మరియు రక్తస్రావాన్ని ఆపడానికి సహాయపడతాయి.' },
+      { icon: '⚡', text: 'తక్కువ స్థాయిలు సులభంగా గాయాలు లేదా రక్తస్రావం కలిగించవచ్చు.' },
+      { icon: '🥦', text: 'ఆకుకూరల వంటి ఫోలేట్ అధికంగా ఉండే ఆహారాలు సహాయపడవచ్చు.' },
+    ],
+  },
+};
+
+const DIAGRAM_LABELS = {
+  en: { rbc: ['Lungs', 'Blood', 'Body organs'], wbc: ['Germs', 'Immune response', 'Protection'], plt: ['Injury', 'Clotting', 'Stops bleeding'] },
+  hi: { rbc: ['फेफड़े', 'खून', 'शरीर'], wbc: ['कीटाणु', 'प्रतिरक्षा प्रतिक्रिया', 'सुरक्षा'], plt: ['चोट', 'थक्का जमना', 'रक्तस्राव रुकना'] },
+  te: { rbc: ['ఊపిరితిత్తులు', 'రక్తం', 'శరీరం'], wbc: ['సూక్ష్మజీవులు', 'రోగనిరోధక ప్రతిస్పందన', 'రక్షణ'], plt: ['గాయం', 'గడ్డకట్టడం', 'రక్తస్రావం ఆగడం'] },
+};
 
 class Component extends DCLogic {
   state = {
@@ -286,6 +489,11 @@ class Component extends DCLogic {
     category: null,
     showNumbers: false,
     narrateIndex: -1,
+    narrateAskIndex: -1,
+    askTranscript: '',
+    askListening: false,
+    askVoiceUnavailable: false,
+    feedbackGiven: false,
   };
 
   componentDidMount() {
@@ -295,7 +503,15 @@ class Component extends DCLogic {
   componentDidUpdate(prevProps, prevState) {
     if (prevState.screen !== this.state.screen) {
       this.stopSpeech();
-      this.setState({ showNumbers: false, narrateIndex: -1 });
+      this.setState({
+        showNumbers: false,
+        narrateIndex: -1,
+        narrateAskIndex: -1,
+        askTranscript: '',
+        askListening: false,
+        askVoiceUnavailable: false,
+        feedbackGiven: false,
+      });
       this.maybeNarrateScreen();
     }
   }
@@ -338,6 +554,14 @@ class Component extends DCLogic {
       this.speak(this.categoryName(cat) + '. ' + this.categoryDesc(cat));
     } else if (this.state.screen === 'result') {
       this.speak(this.resultStatusText());
+    } else if (this.state.screen === 'ask') {
+      this.narrateAskSequence(0);
+    } else if (this.state.screen === 'explanation') {
+      const cat = this.state.category;
+      const facts = this.factsFor(cat);
+      this.speak([this.t.explanationTitle, this.paramLabelText(cat), ...facts.map(f => f.text)].join('. '));
+    } else if (this.state.screen === 'saved') {
+      this.speak(this.t.savedHeading + '. ' + this.t.savedBody);
     }
   }
 
@@ -346,6 +570,18 @@ class Component extends DCLogic {
     this.setState({ narrateIndex: i });
     const cat = CAT_DEFS[i].id;
     this.speak(this.categoryName(cat) + '. ' + this.categoryDesc(cat), () => this.narrateOverviewSequence(i + 1));
+  }
+
+  askOptionTexts() {
+    const t = this.t;
+    return [t.askWhatMeans, t.askWhyMeasured, t.askAskDoctor, t.askOwnWords];
+  }
+
+  narrateAskSequence(i) {
+    const opts = this.askOptionTexts();
+    if (i >= opts.length) { this.setState({ narrateAskIndex: -1 }); return; }
+    this.setState({ narrateAskIndex: i });
+    this.speak(opts[i], () => this.narrateAskSequence(i + 1));
   }
 
   categoryName(id) {
@@ -373,6 +609,52 @@ class Component extends DCLogic {
   backToConcept() { this.setState({ screen: 'concept' }); }
   goToResult() { this.setState({ screen: 'result' }); }
   toggleNumbers() { this.setState(s => ({ showNumbers: !s.showNumbers })); }
+
+  goToAsk() { this.setState({ screen: 'ask' }); }
+  goToSaved() { this.setState({ screen: 'saved' }); }
+  backToResult() { this.setState({ screen: 'result' }); }
+  backToAsk() { this.setState({ screen: 'ask' }); }
+  goToExplanation() { this.setState({ screen: 'explanation' }); }
+  exploreAnotherPart() { this.setState({ screen: 'overview', category: null }); }
+  giveFeedback() { this.setState({ feedbackGiven: true }); }
+  updateAskTranscript(e) { this.setState({ askTranscript: e.target.value }); }
+
+  paramLabelText(cat) {
+    const t = this.t;
+    if (cat === 'rbc') return t.hbLabel;
+    if (cat === 'wbc') return t.wbcLabel;
+    if (cat === 'plt') return t.pltLabel;
+    return '';
+  }
+
+  factsFor(cat) {
+    const byLang = FACTS[this.state.langId] || FACTS.en;
+    return byLang[cat] || [];
+  }
+
+  startVoiceInput() {
+    const SR = (typeof window !== 'undefined') && (window.SpeechRecognition || window.webkitSpeechRecognition);
+    if (!SR) {
+      this.setState({ askVoiceUnavailable: true, askTranscript: '' });
+      return;
+    }
+    try {
+      const recognition = new SR();
+      recognition.lang = this.lang.code;
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+      this.setState({ askListening: true, askVoiceUnavailable: false, askTranscript: '' });
+      recognition.onresult = (e) => {
+        const transcript = (e.results && e.results[0] && e.results[0][0]) ? e.results[0][0].transcript : '';
+        this.setState({ askTranscript: transcript, askListening: false });
+      };
+      recognition.onerror = () => { this.setState({ askListening: false, askVoiceUnavailable: true }); };
+      recognition.onend = () => { this.setState(s => (s.askListening ? { askListening: false } : null)); };
+      recognition.start();
+    } catch (e) {
+      this.setState({ askListening: false, askVoiceUnavailable: true });
+    }
+  }
 
   resultHeadingText() {
     const t = this.t;
@@ -487,6 +769,34 @@ class Component extends DCLogic {
     );
   }
 
+  buildExplanationDiagram(cat) {
+    const accent = (CAT_DEFS.find(c => c.id === cat) || {}).accent || '#C0392B';
+    const labels = ((DIAGRAM_LABELS[this.state.langId] || DIAGRAM_LABELS.en)[cat]) || ['', '', ''];
+    const boxW = 86, boxH = 46, gap = 18, y = 12;
+    const xs = [0, boxW + gap, (boxW + gap) * 2];
+    const lineHeight = 12;
+    const nodes = xs.map((x, i) => {
+      const words = String(labels[i]).split(' ');
+      const startY = y + boxH / 2 - ((words.length - 1) * lineHeight) / 2 + 4;
+      return React.createElement('g', { key: 'n' + i },
+        React.createElement('rect', { x, y, width: boxW, height: boxH, rx: 14, fill: accent + '1A', stroke: accent, strokeWidth: 1.5 }),
+        React.createElement('text', { x: x + boxW / 2, textAnchor: 'middle', fontSize: 10.5, fontWeight: 700, fill: accent },
+          words.map((w, wi) => React.createElement('tspan', { key: wi, x: x + boxW / 2, y: startY + wi * lineHeight }, w))
+        )
+      );
+    });
+    const arrows = [0, 1].map(i => {
+      const x1 = xs[i] + boxW, x2 = xs[i + 1];
+      const yc = y + boxH / 2;
+      return React.createElement('g', { key: 'a' + i },
+        React.createElement('line', { x1: x1 + 3, y1: yc, x2: x2 - 8, y2: yc, stroke: accent, strokeWidth: 2, strokeDasharray: '5 4', style: { animation: 'dashFlow 1.4s linear infinite' } }),
+        React.createElement('path', { d: `M${x2 - 11} ${yc - 5} L${x2 - 3} ${yc} L${x2 - 11} ${yc + 5}`, fill: 'none', stroke: accent, strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' })
+      );
+    });
+    const totalW = xs[2] + boxW, totalH = y * 2 + boxH;
+    return React.createElement('svg', { width: totalW, height: totalH, viewBox: `0 0 ${totalW} ${totalH}` }, ...nodes, ...arrows);
+  }
+
   renderVals() {
     const t = this.t;
     const screen = this.state.screen;
@@ -522,12 +832,39 @@ class Component extends DCLogic {
       paramRangeLine = `${param.low}–${param.high} ${param.unit}`;
     }
 
+    const askOptionDefs = [
+      { icon: '💬', label: t.askWhatMeans, onClick: () => this.goToExplanation(), showSpeaker: true, speakText: t.askWhatMeans },
+      { icon: '💬', label: t.askWhyMeasured, onClick: () => this.speak(t.askWhyMeasured), showSpeaker: true, speakText: t.askWhyMeasured },
+      { icon: '💬', label: t.askAskDoctor, onClick: () => this.speak(t.askAskDoctor), showSpeaker: true, speakText: t.askAskDoctor },
+      { icon: '🎙️', label: t.askOwnWords, onClick: () => this.startVoiceInput(), showSpeaker: false, speakText: t.askOwnWords },
+    ];
+    const askOptions = askOptionDefs.map((o, i) => ({
+      icon: o.icon,
+      label: o.label,
+      onClick: o.onClick,
+      showSpeaker: o.showSpeaker,
+      speak: (e) => { e.stopPropagation(); this.speak(o.speakText); },
+      border: this.state.narrateAskIndex === i ? '2px solid #C0392B' : '1.5px solid transparent',
+      shadow: this.state.narrateAskIndex === i ? '0 4px 20px rgba(192,57,43,0.22)' : '0 4px 16px rgba(0,0,0,0.08)',
+    }));
+
+    const savedCategoryCards = CAT_DEFS.map(c => ({
+      bg: c.bg,
+      accent: c.accent,
+      icon: c.id === 'rbc' ? '🩸' : c.id === 'wbc' ? '🛡️' : '🩹',
+      label: c.id === 'rbc' ? t.labelRed : c.id === 'wbc' ? t.labelBlue : t.labelPurple,
+      select: () => this.selectCategory(c.id),
+    }));
+
     return {
       isLang: screen === 'lang',
       isOpening: screen === 'opening',
       isOverview: screen === 'overview',
       isConcept: screen === 'concept',
       isResult: screen === 'result',
+      isAsk: screen === 'ask',
+      isExplanation: screen === 'explanation',
+      isSaved: screen === 'saved',
       progressSteps,
       languages,
       categories,
@@ -556,6 +893,22 @@ class Component extends DCLogic {
       speakResultLine: () => this.speak(resultStatusLine),
       paramValueLine,
       paramRangeLine,
+      goToAsk: () => this.goToAsk(),
+      goToSaved: () => this.goToSaved(),
+      backToResult: () => this.backToResult(),
+      backToAsk: () => this.backToAsk(),
+      askOptions,
+      askTranscript: this.state.askTranscript,
+      onAskTranscriptChange: (e) => this.updateAskTranscript(e),
+      showAskTranscript: this.state.askListening || !!this.state.askTranscript,
+      askVoiceUnavailable: this.state.askVoiceUnavailable,
+      explanationParamLabel: cat ? this.paramLabelText(cat) : '',
+      explanationFacts: cat ? this.factsFor(cat) : [],
+      explanationDiagram: cat ? this.buildExplanationDiagram(cat) : null,
+      feedbackGiven: this.state.feedbackGiven,
+      giveFeedback: () => this.giveFeedback(),
+      exploreAnotherPart: () => this.exploreAnotherPart(),
+      savedCategoryCards,
     };
   }
 }
