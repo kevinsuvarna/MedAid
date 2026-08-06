@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Sans+Telugu:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  html,body{margin:0;padding:0;background:#E9E2DC;}
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  a { color: #C0392B; }
+  a:hover { color: #9E2E22; }
+  @keyframes heartbeat { 0%,100%{ stroke-dashoffset: 0; } 50%{ stroke-dashoffset: -12; } }
+  @keyframes floatY { 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-8px); } }
+  @keyframes pulseScale { 0%,100%{ transform: scale(1); opacity:1; } 50%{ transform: scale(1.06); opacity:0.85; } }
+  @keyframes spin18 { from{ transform: rotate(0deg); } to{ transform: rotate(360deg); } }
+  @keyframes dashFlow { to { stroke-dashoffset: -40; } }
+  @keyframes fadeIn { from{ opacity:0; transform: translateY(8px); } to{ opacity:1; transform: translateY(0); } }
+  @keyframes ringPulse { 0%,100%{ opacity:0.6; transform:scale(1); } 50%{ opacity:0; transform:scale(1.35); } }
+</style>
+</helmet>
+
+<div style="min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:24px 0;font-family:'Noto Sans','Noto Sans Devanagari','Noto Sans Telugu',sans-serif;">
+<div style="width:390px;min-height:780px;background:#FDF6F0;border-radius:30px;overflow:hidden;box-shadow:0 24px 60px rgba(26,26,46,0.22);position:relative;display:flex;flex-direction:column;">
+
+  <sc-if value="{{ !isLang }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;gap:6px;padding:18px 22px 0;">
+      <sc-for list="{{ progressSteps }}" as="step" hint-placeholder-count="4">
+        <div style="flex:1;height:5px;border-radius:3px;background:{{ step.color }};"></div>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isLang }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;flex-direction:column;flex:1;padding:0 22px 22px;animation:fadeIn 0.3s ease;">
+      <div style="display:flex;flex-direction:column;align-items:center;background:linear-gradient(180deg,#FBE4DA 0%,#FDF6F0 100%);padding:30px 0 22px;margin:0 -22px 20px;">
+        <svg width="120" height="56" viewBox="0 0 120 56">
+          <polyline points="2,28 22,28 30,10 40,46 50,20 58,28 118,28" fill="none" stroke="#C0392B" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4 2" style="animation:heartbeat 1.6s linear infinite"></polyline>
+        </svg>
+        <div style="font-size:13px;font-weight:700;color:#C0392B;letter-spacing:0.08em;text-transform:uppercase;margin-top:10px;">Step 1 of 5</div>
+      </div>
+      <div style="font-size:25px;font-weight:800;color:#1A1A2E;margin-bottom:4px;">Choose your language</div>
+      <div style="font-size:14px;color:#9CA3AF;margin-bottom:22px;">You can change this anytime</div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <sc-for list="{{ languages }}" as="lang" hint-placeholder-count="3">
+          <div style="display:flex;align-items:center;gap:14px;background:#FFFFFF;border-radius:20px;padding:18px 18px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.08);" onClick="{{ lang.select }}">
+            <div style="width:46px;height:46px;border-radius:50%;background:#FBE4DA;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;" onClick="{{ lang.speak }}">
+              <span style="font-size:19px;">🔊</span>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:18px;font-weight:700;color:#1A1A2E;">{{ lang.label }}</div>
+              <div style="font-size:13px;color:#9CA3AF;margin-top:2px;">{{ lang.hint }}</div>
+            </div>
+            <div style="font-size:20px;color:#C0392B;font-weight:700;">→</div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="margin-top:22px;display:flex;flex-direction:column;align-items:center;gap:8px;border:1.5px dashed #E6B8AC;border-radius:20px;padding:18px;color:#9CA3AF;background:#FFFDFB;">
+        <div style="font-size:24px;">📶</div>
+        <div style="font-size:13px;font-weight:600;">Or tap your NFC card</div>
+      </div>
+
+      <div style="margin-top:14px;">
+        <button style="width:100%;background:#FFFFFF;border:1.5px solid #F0DCD3;border-radius:16px;padding:16px;font-size:15px;font-weight:700;color:#C0392B;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.06);">⬆️ Upload PDF report</button>
+      </div>
+
+      <div style="flex:1;"></div>
+      <div style="text-align:center;font-size:12px;color:#B0A9A2;margin-top:14px;">Your report is private and secure</div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isOpening }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;flex:1;padding:20px 22px 22px;animation:fadeIn 0.3s ease;">
+      <div style="display:flex;justify-content:flex-end;">
+        <div style="font-size:12px;font-weight:700;color:#C0392B;background:#FBE4DA;border-radius:10px;padding:6px 12px;">{{ languageLabel }}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;text-align:center;margin-top:14px;">
+        <div style="width:112px;height:112px;border-radius:50%;background:linear-gradient(160deg,#F7D9C7,#F0B79A);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(192,57,43,0.18);">
+          <svg width="72" height="72" viewBox="0 0 72 72">
+            <circle cx="36" cy="30" r="16" fill="#8C4A2E"></circle>
+            <path d="M14 68 C14 46 24 40 36 40 C48 40 58 46 58 68 Z" fill="#3B4A6B"></path>
+            <circle cx="30" cy="28" r="2.4" fill="#2B1710"></circle>
+            <circle cx="42" cy="28" r="2.4" fill="#2B1710"></circle>
+            <path d="M29 35 Q36 40 43 35" stroke="#2B1710" stroke-width="2" fill="none" stroke-linecap="round"></path>
+            <path d="M20 20 Q36 6 52 20 Q52 12 36 10 Q20 12 20 20 Z" fill="#241A14"></path>
+          </svg>
+        </div>
+        <div style="font-size:24px;font-weight:800;color:#1A1A2E;margin-top:18px;">{{ t.greeting }}</div>
+        <div style="font-size:14.5px;color:#6B7280;margin-top:6px;max-width:270px;font-weight:500;">{{ t.openingLine }}</div>
+      </div>
+
+      <div style="background:#FFFFFF;border-radius:20px;padding:20px;margin-top:26px;box-shadow:0 4px 16px rgba(0,0,0,0.08);">
+        <div style="font-size:16px;font-weight:700;color:#1A1A2E;">{{ patientReportLabel }}</div>
+        <div style="font-size:13px;color:#9CA3AF;margin-top:4px;font-weight:500;">{{ t.reportMeta }}</div>
+      </div>
+
+      <div style="flex:1;"></div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <button style="background:#C0392B;color:#FFF;border:none;border-radius:27px;padding:16px;font-size:16px;font-weight:700;cursor:pointer;min-height:54px;box-shadow:0 6px 18px rgba(192,57,43,0.32);" onClick="{{ exploreReport }}">🩸 {{ t.exploreCta }}</button>
+        <button style="background:#FFFFFF;color:#C0392B;border:1.5px solid #F0DCD3;border-radius:27px;padding:16px;font-size:16px;font-weight:700;cursor:pointer;min-height:54px;" onClick="{{ listenToReport }}">🔊 {{ t.listenCta }}</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isOverview }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;flex:1;padding:20px 22px 22px;animation:fadeIn 0.3s ease;">
+      <div style="font-size:23px;font-weight:800;color:#1A1A2E;line-height:1.3;">{{ t.overviewTitle }}</div>
+      <div style="display:flex;flex-direction:column;gap:16px;margin-top:24px;">
+        <sc-for list="{{ categories }}" as="cat" hint-placeholder-count="3">
+          <div style="display:flex;align-items:center;gap:16px;background:#FFFFFF;border-radius:20px;padding:20px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.08);border-left:5px solid {{ cat.accent }};position:relative;" onClick="{{ cat.select }}">
+            <div style="width:54px;height:54px;border-radius:16px;background:{{ cat.bg }};display:flex;align-items:center;justify-content:center;flex-shrink:0;">{{ cat.icon }}</div>
+            <div style="flex:1;">
+              <div style="font-size:17px;font-weight:700;color:#1A1A2E;">{{ cat.name }}</div>
+              <div style="font-size:13.5px;color:#6B7280;margin-top:3px;font-weight:500;">{{ cat.desc }}</div>
+            </div>
+            <div style="font-size:22px;color:{{ cat.accent }};font-weight:700;">›</div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="flex:1;"></div>
+      <div style="text-align:center;font-size:13px;color:#9CA3AF;font-weight:600;">{{ t.tapOne }}</div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isConcept }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;flex:1;padding:16px 22px 22px;animation:fadeIn 0.3s ease;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="font-size:24px;color:#6B7280;cursor:pointer;padding:4px;" onClick="{{ backToOverview }}">‹</div>
+        <div style="font-size:19px;font-weight:800;color:#1A1A2E;">{{ currentCategoryName }}</div>
+      </div>
+
+      <div style="display:flex;justify-content:center;align-items:center;margin-top:16px;height:230px;border-radius:26px;background:{{ currentCategoryBg }};overflow:hidden;">
+        {{ conceptIcon }}
+      </div>
+
+      <div style="text-align:center;font-size:16.5px;color:#1A1A2E;font-weight:600;margin-top:24px;line-height:1.55;padding:0 6px;">{{ currentCategoryDesc }}</div>
+
+      <div style="display:flex;justify-content:center;margin-top:18px;">
+        <button style="background:#FFFFFF;border:1.5px solid #F0DCD3;border-radius:16px;padding:12px 20px;font-size:14px;font-weight:700;color:#C0392B;cursor:pointer;display:flex;align-items:center;gap:6px;box-shadow:0 4px 16px rgba(0,0,0,0.06);" onClick="{{ speakConceptDesc }}">🔊 {{ t.listen }}</button>
+      </div>
+
+      <div style="flex:1;"></div>
+      <button style="background:#C0392B;color:#FFF;border:none;border-radius:27px;padding:16px;font-size:16px;font-weight:700;cursor:pointer;min-height:54px;box-shadow:0 6px 18px rgba(192,57,43,0.32);" onClick="{{ goToResult }}">{{ t.seeResult }}</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isResult }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;flex:1;padding:16px 22px 22px;animation:fadeIn 0.3s ease;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="font-size:24px;color:#6B7280;cursor:pointer;padding:4px;" onClick="{{ backToConcept }}">‹</div>
+        <div style="font-size:19px;font-weight:800;color:{{ flagColor }};">{{ resultHeading }}</div>
+      </div>
+
+      <div style="font-size:14.5px;color:#6B7280;margin-top:10px;line-height:1.55;font-weight:500;">{{ paramDesc }}</div>
+
+      <div style="background:#FFFFFF;border-radius:22px;padding:24px 20px;margin-top:24px;box-shadow:0 4px 16px rgba(0,0,0,0.08);">
+        <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:#9CA3AF;margin-bottom:14px;">
+          <span>{{ t.lower }}</span>
+          <span>{{ t.higher }}</span>
+        </div>
+        <div style="position:relative;height:10px;border-radius:6px;background:linear-gradient(90deg,#E74C3C 0%,#27AE60 50%,#F39C12 100%);">
+          <div style="position:absolute;top:50%;left:{{ gaugePercent }}%;transform:translate(-50%,-50%);width:22px;height:22px;border-radius:50%;background:{{ flagColor }};border:4px solid #FFFFFF;box-shadow:0 3px 10px rgba(0,0,0,0.25);"></div>
+        </div>
+        <div style="text-align:center;font-size:14.5px;font-weight:700;color:{{ flagColor }};background:{{ flagBg }};border-radius:14px;padding:14px;margin-top:24px;">{{ resultStatusLine }}</div>
+
+        <div style="display:flex;justify-content:center;margin-top:16px;">
+          <button style="background:transparent;border:1.5px solid #F0DCD3;border-radius:16px;padding:11px 20px;font-size:14px;font-weight:700;color:#C0392B;cursor:pointer;display:flex;align-items:center;gap:6px;" onClick="{{ speakResultLine }}">🔊 {{ t.explainThis }}</button>
+        </div>
+      </div>
+
+      <div style="margin-top:18px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;background:#FFFFFF;border-radius:16px;padding:16px 18px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.06);" onClick="{{ toggleNumbers }}">
+          <span style="font-size:14.5px;font-weight:700;color:#1A1A2E;">{{ numbersToggleLabel }}</span>
+        </div>
+        <sc-if value="{{ showNumbers }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#FFFFFF;border-radius:16px;padding:18px;margin-top:10px;display:flex;flex-direction:column;gap:12px;box-shadow:0 4px 16px rgba(0,0,0,0.06);">
+            <div style="display:flex;justify-content:space-between;font-size:14px;border-top:1px solid #F3EDE8;padding-top:0;">
+              <span style="color:#6B7280;font-weight:500;">{{ resultHeading }}</span>
+              <span style="font-weight:700;color:#1A1A2E;">{{ paramValueLine }}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:14px;border-top:1px solid #F3EDE8;padding-top:12px;">
+              <span style="color:#6B7280;font-weight:500;">{{ t.lab }}</span>
+              <span style="font-weight:700;color:#1A1A2E;">{{ paramRangeLine }}</span>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+
+      <div style="flex:1;"></div>
+    </div>
+  </sc-if>
+
+</div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+
+const LANG_META = [
+  { id: 'en', label: 'English', hint: 'Tap to hear', code: 'en-IN' },
+  { id: 'hi', label: 'हिन्दी', hint: 'सुनने के लिए दबाएँ', code: 'hi-IN' },
+  { id: 'te', label: 'తెలుగు', hint: 'వినడానికి నొక్కండి', code: 'te-IN' },
+];
+
+const T = {
+  en: {
+    greeting: 'Hello, Ravi', openingLine: "Here is your blood report. Let's understand it together.",
+    reportMeta: 'Complete Blood Count (CBC) · 06 Aug 2026', patientReportLabel: 'Ravi Kumar · CBC Report',
+    exploreCta: 'Explore Blood Report', listenCta: 'Listen to My Report',
+    overviewTitle: 'Your blood report looks at 3 main areas', tapOne: 'Tap one to understand',
+    rbcName: 'Red Blood Cells', rbcDesc: 'Carry oxygen around your body',
+    wbcName: 'White Blood Cells', wbcDesc: 'Help your body respond to infections',
+    pltName: 'Platelets', pltDesc: 'Help your blood clot',
+    seeResult: 'See my result →', listen: 'Listen',
+    hbHeading: 'Your Haemoglobin', wbcHeading: 'Your White Blood Cells', pltHeading: 'Your Platelets',
+    hbDesc: 'This shows how well your blood carries oxygen.',
+    wbcResultDesc: 'This shows how well your body can fight infections.',
+    pltResultDesc: 'This shows how well your blood can stop bleeding.',
+    below: 'below', within: 'within', above: 'above',
+    explainThis: 'Explain this', seeNumbers: 'See actual numbers ↓', hideNumbers: 'Hide numbers ↑',
+    lab: 'Laboratory reference', lower: 'Lower', higher: 'Higher',
+  },
+  hi: {
+    greeting: 'नमस्ते, रवि', openingLine: 'यह आपकी ब्लड रिपोर्ट है। आइए इसे साथ में समझें।',
+    reportMeta: 'संपूर्ण रक्त परीक्षण (CBC) · 06 अगस्त 2026', patientReportLabel: 'रवि कुमार · CBC रिपोर्ट',
+    exploreCta: 'ब्लड रिपोर्ट देखें', listenCta: 'मेरी रिपोर्ट सुनें',
+    overviewTitle: 'आपकी ब्लड रिपोर्ट 3 मुख्य भागों को देखती है', tapOne: 'समझने के लिए किसी एक पर दबाएँ',
+    rbcName: 'लाल रक्त कोशिकाएं', rbcDesc: 'आपके शरीर में ऑक्सीजन ले जाती हैं',
+    wbcName: 'श्वेत रक्त कोशिकाएं', wbcDesc: 'संक्रमण से लड़ने में मदद करती हैं',
+    pltName: 'प्लेटलेट्स', pltDesc: 'खून का थक्का बनाने में मदद करते हैं',
+    seeResult: 'मेरा परिणाम देखें →', listen: 'सुनें',
+    hbHeading: 'आपका हीमोग्लोबिन', wbcHeading: 'आपकी श्वेत रक्त कोशिकाएं', pltHeading: 'आपके प्लेटलेट्स',
+    hbDesc: 'यह दिखाता है कि आपका खून कितनी अच्छी तरह ऑक्सीजन ले जाता है।',
+    wbcResultDesc: 'यह दिखाता है कि आपका शरीर संक्रमण से कितनी अच्छी तरह लड़ सकता है।',
+    pltResultDesc: 'यह दिखाता है कि आपका खून कितनी अच्छी तरह थक्का बना सकता है।',
+    below: 'कम', within: 'सामान्य', above: 'अधिक',
+    explainThis: 'इसे समझाएं', seeNumbers: 'वास्तविक आंकड़े देखें ↓', hideNumbers: 'आंकड़े छिपाएं ↑',
+    lab: 'प्रयोगशाला संदर्भ', lower: 'कम', higher: 'अधिक',
+  },
+  te: {
+    greeting: 'నమస్తే, రవి', openingLine: 'ఇది మీ బ్లడ్ రిపోర్ట్. దీన్ని కలిసి అర్థం చేసుకుందాం.',
+    reportMeta: 'సంపూర్ణ రక్త పరీక్ష (CBC) · 06 ఆగస్టు 2026', patientReportLabel: 'రవి కుమార్ · CBC నివేదిక',
+    exploreCta: 'బ్లడ్ రిపోర్ట్ చూడండి', listenCta: 'నా నివేదికను వినండి',
+    overviewTitle: 'మీ బ్లడ్ రిపోర్ట్ 3 ముఖ్య భాగాలను చూస్తుంది', tapOne: 'అర్థం చేసుకోవడానికి ఒకటి నొక్కండి',
+    rbcName: 'ఎర్ర రక్త కణాలు', rbcDesc: 'మీ శరీరమంతా ఆక్సిజన్‌ను తీసుకువెళ్తాయి',
+    wbcName: 'తెల్ల రక్త కణాలు', wbcDesc: 'ఇన్‌ఫెక్షన్లతో పోరాడటానికి సహాయపడతాయి',
+    pltName: 'ప్లేట్‌లెట్స్', pltDesc: 'రక్తం గడ్డకట్టడానికి సహాయపడతాయి',
+    seeResult: 'నా ఫలితం చూడండి →', listen: 'వినండి',
+    hbHeading: 'మీ హీమోగ్లోబిన్', wbcHeading: 'మీ తెల్ల రక్త కణాలు', pltHeading: 'మీ ప్లేట్‌లెట్స్',
+    hbDesc: 'ఇది మీ రక్తం ఆక్సిజన్‌ను ఎంత బాగా తీసుకువెళ్తుందో చూపిస్తుంది.',
+    wbcResultDesc: 'ఇది మీ శరీరం ఇన్‌ఫెక్షన్లతో ఎంత బాగా పోరాడగలదో చూపిస్తుంది.',
+    pltResultDesc: 'ఇది మీ రక్తం ఎంత బాగా గడ్డకట్టగలదో చూపిస్తుంది.',
+    below: 'తక్కువ', within: 'సాధారణం', above: 'ఎక్కువ',
+    explainThis: 'వివరించండి', seeNumbers: 'వాస్తవ సంఖ్యలు చూడండి ↓', hideNumbers: 'సంఖ్యలు దాచండి ↑',
+    lab: 'ప్రయోగశాల సూచన', lower: 'తక్కువ', higher: 'ఎక్కువ',
+  },
+};
+
+const CAT_DEFS = [
+  { id: 'rbc', bg: '#FBE4DA', accent: '#C0392B' },
+  { id: 'wbc', bg: '#E4EEFB', accent: '#2E86DE' },
+  { id: 'plt', bg: '#EDE8FB', accent: '#6C5CE7' },
+];
+
+const PARAMS = {
+  rbc: { key: 'hb', value: 10.8, unit: 'g/dL', low: 13, high: 17, flag: 'below' },
+  wbc: { key: 'wbc', value: 7.2, unit: '×10³/µL', low: 4, high: 11, flag: 'within' },
+  plt: { key: 'plt', value: 210, unit: '×10³/µL', low: 150, high: 400, flag: 'within' },
+};
+
+const SCREEN_STEP = { opening: 0, overview: 1, concept: 2, result: 3 };
+
+class Component extends DCLogic {
+  state = {
+    screen: 'lang',
+    langId: 'en',
+    audioMode: false,
+    category: null,
+    showNumbers: false,
+    narrateIndex: -1,
+  };
+
+  componentDidMount() {
+    this.maybeNarrateScreen();
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.screen !== this.state.screen) {
+      this.stopSpeech();
+      this.setState({ showNumbers: false, narrateIndex: -1 });
+      this.maybeNarrateScreen();
+    }
+  }
+
+  componentWillUnmount() {
+    this.stopSpeech();
+  }
+
+  get lang() { return LANG_META.find(l => l.id === this.state.langId) || LANG_META[0]; }
+  get t() { return T[this.state.langId] || T.en; }
+
+  speechAvailable() {
+    return typeof window !== 'undefined' && 'speechSynthesis' in window;
+  }
+
+  stopSpeech() {
+    if (this.speechAvailable()) window.speechSynthesis.cancel();
+  }
+
+  speak(text, onEnd) {
+    if (!this.speechAvailable() || !text) { if (onEnd) onEnd(); return; }
+    try {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = this.lang.code;
+      if (onEnd) u.onend = onEnd;
+      window.speechSynthesis.speak(u);
+    } catch (e) { if (onEnd) onEnd(); }
+  }
+
+  maybeNarrateScreen() {
+    if (!this.state.audioMode) return;
+    const t = this.t;
+    if (this.state.screen === 'opening') {
+      this.speak(t.greeting + '. ' + t.openingLine);
+    } else if (this.state.screen === 'overview') {
+      this.narrateOverviewSequence(0);
+    } else if (this.state.screen === 'concept') {
+      const cat = this.state.category;
+      this.speak(this.categoryName(cat) + '. ' + this.categoryDesc(cat));
+    } else if (this.state.screen === 'result') {
+      this.speak(this.resultStatusText());
+    }
+  }
+
+  narrateOverviewSequence(i) {
+    if (i >= CAT_DEFS.length) { this.setState({ narrateIndex: -1 }); return; }
+    this.setState({ narrateIndex: i });
+    const cat = CAT_DEFS[i].id;
+    this.speak(this.categoryName(cat) + '. ' + this.categoryDesc(cat), () => this.narrateOverviewSequence(i + 1));
+  }
+
+  categoryName(id) {
+    const t = this.t;
+    if (id === 'rbc') return t.rbcName;
+    if (id === 'wbc') return t.wbcName;
+    return t.pltName;
+  }
+  categoryDesc(id) {
+    const t = this.t;
+    if (id === 'rbc') return t.rbcDesc;
+    if (id === 'wbc') return t.wbcDesc;
+    return t.pltDesc;
+  }
+
+  selectLanguage(id) {
+    this.setState({ langId: id, screen: 'opening' });
+  }
+
+  exploreReport() { this.setState({ screen: 'overview' }); }
+  listenToReport() { this.setState({ audioMode: true, screen: 'overview' }); }
+
+  selectCategory(id) { this.setState({ screen: 'concept', category: id }); }
+  backToOverview() { this.setState({ screen: 'overview', category: null }); }
+  backToConcept() { this.setState({ screen: 'concept' }); }
+  goToResult() { this.setState({ screen: 'result' }); }
+  toggleNumbers() { this.setState(s => ({ showNumbers: !s.showNumbers })); }
+
+  resultHeadingText() {
+    const t = this.t;
+    const cat = this.state.category;
+    if (cat === 'rbc') return t.hbHeading;
+    if (cat === 'wbc') return t.wbcHeading;
+    if (cat === 'plt') return t.pltHeading;
+    return '';
+  }
+  resultDescText() {
+    const t = this.t;
+    const cat = this.state.category;
+    if (cat === 'rbc') return t.hbDesc;
+    if (cat === 'wbc') return t.wbcResultDesc;
+    if (cat === 'plt') return t.pltResultDesc;
+    return '';
+  }
+
+  gaugePercentFor(param) {
+    const { value, low, high, flag } = param;
+    if (flag === 'below') {
+      const pct = Math.max(0, Math.min(1, value / low)) * 25;
+      return Math.min(23, Math.max(2, pct));
+    }
+    if (flag === 'above') {
+      const span = high * 0.5 || 1;
+      const pct = 75 + Math.max(0, Math.min(1, (value - high) / span)) * 25;
+      return Math.min(98, Math.max(77, pct));
+    }
+    const pct = 25 + Math.max(0, Math.min(1, (value - low) / (high - low))) * 50;
+    return Math.min(73, Math.max(27, pct));
+  }
+
+  flagColorFor(flag) {
+    if (flag === 'below') return '#E74C3C';
+    if (flag === 'above') return '#F39C12';
+    return '#27AE60';
+  }
+  flagBgFor(flag) {
+    if (flag === 'below') return '#FDEDEB';
+    if (flag === 'above') return '#FEF3E2';
+    return '#E9F7EF';
+  }
+
+  resultStatusText() {
+    const t = this.t;
+    const cat = this.state.category;
+    const param = PARAMS[cat];
+    if (!param) return '';
+    const statusWord = t[param.flag];
+    return `${this.resultHeadingText()}. ${this.resultDescText()} Your result is ${statusWord} the reference range.`;
+  }
+
+  cardIcon(id) {
+    if (id === 'rbc') {
+      return React.createElement('svg', { width: 30, height: 30, viewBox: '0 0 30 30' },
+        React.createElement('circle', { cx: 15, cy: 15, r: 13, fill: '#C0392B' }),
+        React.createElement('ellipse', { cx: 15, cy: 15, rx: 6, ry: 4.2, fill: '#E8746A' })
+      );
+    }
+    if (id === 'wbc') {
+      const spikes = [];
+      for (let i = 0; i < 10; i++) {
+        const ang = (i / 10) * Math.PI * 2;
+        const x1 = 15 + Math.cos(ang) * 11, y1 = 15 + Math.sin(ang) * 11;
+        const x2 = 15 + Math.cos(ang) * 14.5, y2 = 15 + Math.sin(ang) * 14.5;
+        spikes.push(React.createElement('line', { key: i, x1, y1, x2, y2, stroke: '#2E86DE', strokeWidth: 2, strokeLinecap: 'round' }));
+      }
+      return React.createElement('svg', { width: 30, height: 30, viewBox: '0 0 30 30' },
+        ...spikes,
+        React.createElement('circle', { cx: 15, cy: 15, r: 10, fill: '#DCEBFB', stroke: '#2E86DE', strokeWidth: 1.5 }),
+        React.createElement('circle', { cx: 15, cy: 15, r: 4, fill: '#2E86DE' })
+      );
+    }
+    return React.createElement('svg', { width: 30, height: 30, viewBox: '0 0 30 30' },
+      React.createElement('ellipse', { cx: 11, cy: 12, rx: 6, ry: 3.6, fill: '#6C5CE7' }),
+      React.createElement('ellipse', { cx: 19, cy: 18, rx: 5, ry: 3, fill: '#8577EE' }),
+      React.createElement('ellipse', { cx: 12, cy: 20, rx: 4, ry: 2.4, fill: '#A79AF2' })
+    );
+  }
+
+  buildConceptIcon(cat) {
+    if (cat === 'rbc') {
+      return React.createElement('svg', { width: 190, height: 170, viewBox: '0 0 190 170', style: { animation: 'floatY 3s ease-in-out infinite' } },
+        React.createElement('path', { d: 'M75 30 C40 30 25 60 25 95 C25 130 45 150 70 150 C85 150 90 130 90 110 L90 55 C90 40 85 30 75 30 Z', fill: '#E8746A' }),
+        React.createElement('path', { d: 'M115 30 C150 30 165 60 165 95 C165 130 145 150 120 150 C105 150 100 130 100 110 L100 55 C100 40 105 30 115 30 Z', fill: '#C0392B' }),
+        React.createElement('line', { x1: 95, y1: 10, x2: 95, y2: 40, stroke: '#8C4A2E', strokeWidth: 5, strokeLinecap: 'round' }),
+        React.createElement('path', { d: 'M60 60 Q75 75 60 90 Q45 105 60 120', stroke: '#FBE4DA', strokeWidth: 3, fill: 'none', strokeLinecap: 'round', strokeDasharray: '6 6', style: { animation: 'dashFlow 1.6s linear infinite' } }),
+        React.createElement('path', { d: 'M130 60 Q145 75 130 90 Q115 105 130 120', stroke: '#FBE4DA', strokeWidth: 3, fill: 'none', strokeLinecap: 'round', strokeDasharray: '6 6', style: { animation: 'dashFlow 1.6s linear infinite' } })
+      );
+    }
+    if (cat === 'wbc') {
+      const spikes = [];
+      for (let i = 0; i < 14; i++) {
+        const ang = (i / 14) * Math.PI * 2;
+        const x1 = 95 + Math.cos(ang) * 46, y1 = 85 + Math.sin(ang) * 46;
+        const x2 = 95 + Math.cos(ang) * 72, y2 = 85 + Math.sin(ang) * 72;
+        spikes.push(React.createElement('line', { key: i, x1, y1, x2, y2, stroke: '#2E86DE', strokeWidth: 3, strokeLinecap: 'round', opacity: 0.55 }));
+      }
+      return React.createElement('svg', { width: 190, height: 170, viewBox: '0 0 190 170' },
+        React.createElement('g', { style: { animation: 'spin18 10s linear infinite', transformOrigin: '95px 85px' } }, ...spikes),
+        React.createElement('circle', { cx: 95, cy: 85, r: 46, fill: '#DCEBFB', stroke: '#2E86DE', strokeWidth: 3, style: { animation: 'pulseScale 2.6s ease-in-out infinite', transformOrigin: '95px 85px' } }),
+        React.createElement('circle', { cx: 95, cy: 85, r: 16, fill: '#2E86DE' })
+      );
+    }
+    return React.createElement('svg', { width: 190, height: 170, viewBox: '0 0 190 170' },
+      React.createElement('line', { x1: 30, y1: 85, x2: 160, y2: 85, stroke: '#B7ADEE', strokeWidth: 4, strokeDasharray: '10 8' }),
+      React.createElement('ellipse', { cx: 70, cy: 65, rx: 16, ry: 9, fill: '#6C5CE7', style: { animation: 'floatY 2.4s ease-in-out infinite' } }),
+      React.createElement('ellipse', { cx: 120, cy: 100, rx: 14, ry: 8, fill: '#8577EE', style: { animation: 'floatY 2.8s ease-in-out infinite' } }),
+      React.createElement('ellipse', { cx: 95, cy: 55, rx: 12, ry: 7, fill: '#A79AF2', style: { animation: 'floatY 2s ease-in-out infinite' } }),
+      React.createElement('rect', { x: 63, y: 78, width: 64, height: 14, rx: 7, fill: '#FDF6F0', stroke: '#6C5CE7', strokeWidth: 2 })
+    );
+  }
+
+  renderVals() {
+    const t = this.t;
+    const screen = this.state.screen;
+    const cat = this.state.category;
+    const param = cat ? PARAMS[cat] : null;
+    const stepIdx = SCREEN_STEP[screen];
+
+    const progressSteps = [0, 1, 2, 3].map(i => ({ color: stepIdx !== undefined && i <= stepIdx ? '#C0392B' : '#F0DCD3' }));
+
+    const languages = LANG_META.map(l => ({
+      label: l.label, hint: l.hint,
+      select: () => this.selectLanguage(l.id),
+      speak: (e) => { e.stopPropagation(); this.speak(l.label); },
+    }));
+
+    const categories = CAT_DEFS.map((c, i) => ({
+      bg: c.bg, accent: c.accent,
+      icon: this.cardIcon(c.id),
+      name: this.categoryName(c.id), desc: this.categoryDesc(c.id),
+      select: () => this.selectCategory(c.id),
+      active: this.state.narrateIndex === i,
+    }));
+
+    let gaugePercent = 0, flagColor = '#27AE60', flagBg = '#E9F7EF', resultStatusLine = '', paramValueLine = '', paramRangeLine = '', resultHeading = '', paramDesc = '';
+    if (param) {
+      gaugePercent = this.gaugePercentFor(param);
+      flagColor = this.flagColorFor(param.flag);
+      flagBg = this.flagBgFor(param.flag);
+      resultHeading = this.resultHeadingText();
+      paramDesc = this.resultDescText();
+      resultStatusLine = `Your result is ${t[param.flag]} the reference range.`;
+      paramValueLine = `${param.value} ${param.unit}`;
+      paramRangeLine = `${param.low}–${param.high} ${param.unit}`;
+    }
+
+    return {
+      isLang: screen === 'lang',
+      isOpening: screen === 'opening',
+      isOverview: screen === 'overview',
+      isConcept: screen === 'concept',
+      isResult: screen === 'result',
+      progressSteps,
+      languages,
+      categories,
+      t,
+      languageLabel: this.lang.label,
+      patientReportLabel: t.patientReportLabel,
+      exploreReport: () => this.exploreReport(),
+      listenToReport: () => this.listenToReport(),
+      backToOverview: () => this.backToOverview(),
+      backToConcept: () => this.backToConcept(),
+      goToResult: () => this.goToResult(),
+      toggleNumbers: () => this.toggleNumbers(),
+      showNumbers: this.state.showNumbers,
+      numbersToggleLabel: this.state.showNumbers ? t.hideNumbers : t.seeNumbers,
+      currentCategoryName: cat ? this.categoryName(cat) : '',
+      currentCategoryDesc: cat ? this.categoryDesc(cat) : '',
+      currentCategoryBg: cat ? (CAT_DEFS.find(c => c.id === cat) || {}).bg : '#FBE4DA',
+      conceptIcon: cat ? this.buildConceptIcon(cat) : null,
+      speakConceptDesc: () => this.speak(this.categoryName(cat) + '. ' + this.categoryDesc(cat)),
+      resultHeading,
+      paramDesc,
+      gaugePercent,
+      flagColor,
+      flagBg,
+      resultStatusLine,
+      speakResultLine: () => this.speak(resultStatusLine),
+      paramValueLine,
+      paramRangeLine,
+    };
+  }
+}
+
+</script>
+</body>
+</html>
