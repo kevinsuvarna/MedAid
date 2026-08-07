@@ -1,0 +1,9 @@
+Basophils are the rarest type of white blood cell. They make up less than 1 percent of all white blood cells in a healthy person.
+
+They play a role in allergic reactions and in signalling other immune cells when there is a threat. When activated, they release a chemical called histamine, which is what causes the itching, swelling, and redness you feel during an allergic reaction.
+
+They are included in the CBC as part of the complete differential count. Although a very small number, they become significant when their count rises, which can sometimes be associated with certain blood conditions or severe allergic responses.
+
+Your basophil level is [VALUE] percent of your white blood cells. The normal range is 0.5 to 1 percent.
+
+Basophils are almost never the main concern in a routine CBC. A slightly raised value on its own is usually not a cause for worry unless other values are also outside the normal range.

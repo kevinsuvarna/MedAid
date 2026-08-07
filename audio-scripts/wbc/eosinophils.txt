@@ -1,0 +1,9 @@
+Eosinophils are a type of white blood cell that specialise in two things: responding to allergies and fighting parasites.
+
+When your body encounters something it is allergic to, like dust, pollen, or certain foods, eosinophils are among the cells that react. They are also the main defenders against parasitic worms, which is why they are particularly relevant in countries like India where such infections are more common.
+
+They are measured in the CBC because a raised eosinophil count, called eosinophilia, is one of the most common findings in routine blood tests in India. It is often a sign of a parasitic infection, an allergy, or asthma. A very high count can sometimes indicate other conditions that need attention.
+
+Your eosinophil level is [VALUE] percent of your white blood cells. The normal range is 1 to 4 percent.
+
+A mildly raised eosinophil count is very common and often related to a minor allergy or past exposure. Your doctor will advise if any further testing is needed.

@@ -1,0 +1,9 @@
+Your total WBC count tells us how many white blood cells are in your blood.
+
+White blood cells are your body's defence system. They find and fight infections, viruses, and anything that should not be in your body. Unlike red blood cells, white blood cells come in several different types, each with its own job.
+
+The total count is measured because it gives a quick first signal of how active your immune system is right now. A high count often means your body is fighting something. A low count can mean your immune system may need support.
+
+Your total white blood cell count is [VALUE] thousand cells per microlitre. The normal range is 4 to 11 thousand cells per microlitre.
+
+The total count alone does not tell the whole story. The five types of white blood cells are also counted separately to understand exactly what your immune system is doing.

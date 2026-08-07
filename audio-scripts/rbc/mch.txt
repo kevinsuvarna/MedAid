@@ -1,0 +1,9 @@
+MCH stands for Mean Corpuscular Haemoglobin. It tells us the average amount of haemoglobin inside each of your red blood cells.
+
+Remember that haemoglobin is the protein that carries oxygen. MCH tells us whether each individual red blood cell is carrying enough of it.
+
+This is measured because it helps doctors understand the quality of each red blood cell, not just how many there are. A cell can look normal in size but still carry too little oxygen if the haemoglobin inside it is low.
+
+Your MCH is [VALUE] picograms. The normal range is 27 to 33 picograms.
+
+A low MCH often goes together with low MCV and low haemoglobin. Together, these three numbers help your doctor understand the full picture of your red blood cells.

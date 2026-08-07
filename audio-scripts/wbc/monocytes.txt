@@ -1,0 +1,9 @@
+Monocytes are large white blood cells that act as your body's deep cleaners and coordinators.
+
+They travel through your blood and move into your tissues when needed. There, they turn into cells called macrophages, which eat up dead cells, bacteria, and debris. They also send signals to other parts of the immune system to organise a bigger response when needed.
+
+They are included in the CBC because an elevated monocyte count can indicate a chronic infection, inflammation, or a recovery phase after an illness. A very low count is uncommon but can sometimes point to bone marrow related conditions.
+
+Your monocyte level is [VALUE] percent of your white blood cells. The normal range is 2 to 8 percent.
+
+Monocyte levels are rarely the main concern in a CBC. They are most useful when looked at together with neutrophils and lymphocytes to understand the overall immune response.

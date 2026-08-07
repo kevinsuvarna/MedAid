@@ -1,0 +1,9 @@
+Lymphocytes are the second most common white blood cell. They are your body's long-term memory fighters.
+
+There are two main types. B-lymphocytes make antibodies, which are proteins that remember past infections and stop them from making you sick again. T-lymphocytes directly attack cells that have been infected by viruses. Together, they are the reason vaccines work.
+
+Lymphocytes are measured in the CBC because a high count can be a sign of a viral infection like dengue or COVID, or sometimes a blood-related condition. A low count can mean the immune system is under stress or being suppressed.
+
+Your lymphocyte level is [VALUE] percent of your white blood cells. The normal range is 20 to 40 percent.
+
+Lymphocyte levels often change during and after an illness. Your doctor will look at the pattern over time rather than a single reading.

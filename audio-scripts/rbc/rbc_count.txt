@@ -1,0 +1,9 @@
+Your RBC count tells us how many red blood cells are in your blood.
+
+Red blood cells carry oxygen from your lungs to every part of your body. They also carry carbon dioxide back to your lungs so you can breathe it out.
+
+This number is measured because having too few red blood cells means your body may not be getting enough oxygen. Having too many can make your blood too thick, which can also cause problems.
+
+Your RBC count is [VALUE] million cells per microlitre. The normal range is 4.5 to 5.5 for men and 4.0 to 5.0 for women.
+
+Speak to your doctor if your count is outside this range. Small changes are common and often easy to treat.

@@ -1,0 +1,9 @@
+Your platelet count tells us how many platelets are in your blood.
+
+Platelets are tiny, disc-shaped particles. They are not full cells, but they have one very important job. When you get a cut or injury, platelets rush to the site and stick together to form a plug that stops the bleeding. They are the first step in your body's natural wound-healing process.
+
+They are measured in the CBC because platelet levels can change with many common conditions. A low platelet count, called thrombocytopenia, can mean your blood takes longer to clot, making even small cuts bleed more than usual. In India, dengue fever is a common cause of a sudden drop in platelets. A high count can sometimes increase the risk of unwanted clotting.
+
+Your platelet count is [VALUE] thousand per microlitre. The normal range is 150 to 400 thousand per microlitre.
+
+A count above 150 is generally considered safe. If your count is low, your doctor will ask about any recent illness and may repeat the test after a few days to track the trend.

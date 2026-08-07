@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { LANG_META, T } from '@/lib/translations';
-import { CAT_DEFS, PARAMS, SCREEN_STEP, FACTS, WBC_DIFFERENTIAL, DETAILED_PARAMS } from '@/lib/data';
+import { CAT_DEFS, PARAMS, SCREEN_STEP, FACTS, WBC_DIFFERENTIAL, CATEGORY_TAGLINES } from '@/lib/data';
 import { speak, stopSpeech, startVoiceInput as startVoiceInputHelper } from '@/lib/speech';
 import PhoneFrame from '@/components/PhoneFrame';
+import TopNavBar from '@/components/TopNavBar';
 import LangScreen from '@/components/screens/LangScreen';
 import OpeningScreen from '@/components/screens/OpeningScreen';
-import HealthPictureScreen from '@/components/screens/HealthPictureScreen';
 import OverviewScreen from '@/components/screens/OverviewScreen';
 import ConceptScreen from '@/components/screens/ConceptScreen';
 import ResultScreen from '@/components/screens/ResultScreen';
@@ -15,6 +15,7 @@ import WBCDifferentialScreen from '@/components/screens/WBCDifferentialScreen';
 import AskScreen from '@/components/screens/AskScreen';
 import ExplanationScreen from '@/components/screens/ExplanationScreen';
 import FollowUpsScreen from '@/components/screens/FollowUpsScreen';
+import FAQScreen from '@/components/screens/FAQScreen';
 import SavedScreen from '@/components/screens/SavedScreen';
 
 const WBC_NORMAL_GREENS = ['#2ECC71', '#27AE60', '#1E8449'];
@@ -22,10 +23,9 @@ const WBC_HIGH_COLOR = '#E74C3C';
 const WBC_LOW_COLOR = '#E67E22';
 const WBC_LOW_BG = '#FFF8E1';
 const WBC_HIGH_BG = '#FDEDEB';
-
-function fillTemplate(str, replacements) {
-  return Object.keys(replacements).reduce((acc, key) => acc.split(`{${key}}`).join(replacements[key]), str);
-}
+const CATEGORY_PRIMARY_PARAM_ID = { rbc: 'hb', wbc: 'totalWbc', plt: 'platelets' };
+const CATEGORY_SHORT_LABEL = { rbc: 'RBC', wbc: 'WBC', plt: 'Platelets' };
+const CATEGORY_TITLE = { rbc: 'Red Blood Cells (RBC)', wbc: 'White Blood Cells (WBC)', plt: 'Platelets' };
 
 function gaugePercentFor(param) {
   const { value, low, high, flag } = param;
@@ -59,13 +59,14 @@ export default function CbcApp() {
   const [langId, setLangId] = useState('en');
   const [audioMode, setAudioMode] = useState(false);
   const [category, setCategory] = useState(null);
-  const [showNumbers, setShowNumbers] = useState(false);
   const [narrateIndex, setNarrateIndex] = useState(-1);
   const [narrateAskIndex, setNarrateAskIndex] = useState(-1);
   const [askTranscript, setAskTranscript] = useState('');
   const [askListening, setAskListening] = useState(false);
   const [askVoiceUnavailable, setAskVoiceUnavailable] = useState(false);
   const [feedbackGiven, setFeedbackGiven] = useState(false);
+  const [history, setHistory] = useState([]);
+  const [selectedParam, setSelectedParam] = useState(null);
 
   const lang = LANG_META.find((l) => l.id === langId) || LANG_META[0];
   const t = T[langId] || T.en;
@@ -129,36 +130,6 @@ export default function CbcApp() {
     return map[id] || id;
   }
 
-  function formatValueUnit(value, unit) {
-    return unit === '%' ? `${value}%` : `${value} ${unit}`;
-  }
-
-  function healthPictureTier() {
-    const abnormalCount = CAT_DEFS.filter((c) => PARAMS[c.id].flag !== 'within').length;
-    if (abnormalCount === 0) return 'green';
-    if (abnormalCount <= 2) return 'amber';
-    return 'red';
-  }
-
-  function healthPictureBulletText(id) {
-    const flag = PARAMS[id].flag;
-    const name = categoryName(id);
-    if (flag === 'within') return fillTemplate(t.healthPicNormalLine, { name });
-    return fillTemplate(t.healthPicAbnormalLine, { name, flag: t[flag] });
-  }
-
-  function healthPictureSummaryLine(tier) {
-    if (tier === 'green') return t.healthPicSummaryGreen;
-    if (tier === 'amber') return t.healthPicSummaryAmber;
-    return t.healthPicSummaryRed;
-  }
-
-  function healthPictureNarrationText() {
-    const tier = healthPictureTier();
-    const bullets = CAT_DEFS.map((c) => healthPictureBulletText(c.id));
-    return [t.healthPicGreeting, healthPictureSummaryLine(tier), ...bullets].join('. ');
-  }
-
   function wbcDifferentialNarrationText() {
     const lines = WBC_DIFFERENTIAL.map((seg) => {
       const name = subParamLabel(seg.id);
@@ -212,8 +183,6 @@ export default function CbcApp() {
     if (!audioMode) return;
     if (screen === 'opening') {
       speak(t.greeting + '. ' + t.openingLine, lang.code);
-    } else if (screen === 'healthPicture') {
-      speak(healthPictureNarrationText(), lang.code);
     } else if (screen === 'overview') {
       narrateOverviewSequence(0);
     } else if (screen === 'concept') {
@@ -236,7 +205,6 @@ export default function CbcApp() {
 
   useEffect(() => {
     stopSpeech();
-    setShowNumbers(false);
     setNarrateIndex(-1);
     setNarrateAskIndex(-1);
     setAskTranscript('');
@@ -248,63 +216,96 @@ export default function CbcApp() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [screen]);
 
+  function pushHistory() {
+    setHistory((h) => [...h, { screen, category, selectedParam }]);
+  }
+  function popHistory() {
+    setHistory((h) => h.slice(0, -1));
+  }
+  function goBack() {
+    if (history.length === 0) return;
+    const prev = history[history.length - 1];
+    setHistory((h) => h.slice(0, -1));
+    setScreen(prev.screen);
+    setCategory(prev.category);
+    setSelectedParam(prev.selectedParam);
+  }
+  function goToLangScreen() {
+    pushHistory();
+    setScreen('lang');
+  }
+
   function selectLanguage(id) {
+    pushHistory();
     setLangId(id);
     setScreen('opening');
   }
   function exploreReport() {
-    setScreen('healthPicture');
-  }
-  function goToOverview() {
+    pushHistory();
     setScreen('overview');
   }
   function listenToReport() {
+    pushHistory();
     setAudioMode(true);
     setScreen('overview');
   }
+  function enableAudioMode() {
+    setAudioMode(true);
+  }
   function selectCategory(id) {
+    pushHistory();
     setScreen('concept');
     setCategory(id);
   }
   function backToOverview() {
+    popHistory();
     setScreen('overview');
     setCategory(null);
   }
-  function backToConcept() {
-    setScreen('concept');
-  }
   function goToResult() {
+    pushHistory();
+    setSelectedParam(null);
     setScreen('result');
   }
-  function toggleNumbers() {
-    setShowNumbers((v) => !v);
+  function goToParamResult(paramData) {
+    pushHistory();
+    setSelectedParam(paramData);
+    setScreen('result');
+  }
+  function goToFaq() {
+    pushHistory();
+    setScreen('faq');
   }
   function goToAsk() {
+    pushHistory();
     setScreen('ask');
   }
   function goToSaved() {
+    pushHistory();
     setScreen('saved');
   }
   function backToResult() {
+    popHistory();
     setScreen('result');
   }
   function backToAsk() {
+    popHistory();
     setScreen('ask');
   }
   function goToExplanation() {
+    pushHistory();
     setScreen('explanation');
   }
   function goToWbcDifferential() {
+    pushHistory();
     setScreen('wbcDifferential');
   }
   function goToFollowUps() {
+    pushHistory();
     setScreen('followUps');
   }
-  function goToResultDirect(id) {
-    setCategory(id);
-    setScreen('result');
-  }
   function exploreAnotherPart() {
+    pushHistory();
     setScreen('overview');
     setCategory(null);
   }
@@ -338,7 +339,7 @@ export default function CbcApp() {
   }
 
   const param = category ? PARAMS[category] : null;
-  const stepIdx = SCREEN_STEP[screen];
+  const stepIdx = screen === 'faq' ? SCREEN_STEP.ask : SCREEN_STEP[screen];
   const progressSteps = [0, 1, 2, 3].map((i) => ({
     color: stepIdx !== undefined && i <= stepIdx ? '#C0392B' : '#F0DCD3',
   }));
@@ -362,6 +363,7 @@ export default function CbcApp() {
     select: () => selectCategory(c.id),
   }));
 
+  const activeParam = selectedParam || param;
   let gaugePercent = 0;
   let flagColor = '#27AE60';
   let flagBg = '#E9F7EF';
@@ -370,22 +372,24 @@ export default function CbcApp() {
   let paramRangeLine = '';
   let resultHeading = '';
   let paramDesc = '';
-  if (param) {
-    gaugePercent = gaugePercentFor(param);
-    flagColor = flagColorFor(param.flag);
-    flagBg = flagBgFor(param.flag);
-    resultHeading = resultHeadingText();
-    paramDesc = resultDescText();
-    resultStatusLine = `Your result is ${t[param.flag]} the reference range.`;
-    paramValueLine = `${param.value} ${param.unit}`;
-    paramRangeLine = `${param.low}–${param.high} ${param.unit}`;
+  if (activeParam) {
+    gaugePercent = gaugePercentFor(activeParam);
+    flagColor = flagColorFor(activeParam.flag);
+    flagBg = flagBgFor(activeParam.flag);
+    resultHeading = selectedParam ? selectedParam.label : CATEGORY_TITLE[category] || '';
+    paramDesc = category ? CATEGORY_TAGLINES[category] : '';
+    resultStatusLine = `Your result is ${t[activeParam.flag]} the reference range.`;
+    paramValueLine = `${activeParam.value} ${activeParam.unit}`;
+    paramRangeLine = `${activeParam.low}–${activeParam.high} ${activeParam.unit}`;
   }
+  const paramId = selectedParam ? selectedParam.id : CATEGORY_PRIMARY_PARAM_ID[category];
+  const paramShortLabel = selectedParam ? selectedParam.label : CATEGORY_SHORT_LABEL[category] || '';
 
   const askOptionDefs = [
     { icon: '💬', label: t.askWhatMeans, onClick: () => goToExplanation(), showSpeaker: true, speakText: t.askWhatMeans },
     { icon: '💬', label: t.askWhyMeasured, onClick: () => speak(t.askWhyMeasured, lang.code), showSpeaker: true, speakText: t.askWhyMeasured },
     { icon: '💬', label: t.askAskDoctor, onClick: () => speak(t.askAskDoctor, lang.code), showSpeaker: true, speakText: t.askAskDoctor },
-    { icon: '🎙️', label: t.askOwnWords, onClick: () => handleStartVoiceInput(), showSpeaker: false, speakText: t.askOwnWords },
+    { icon: '🎙️', label: t.askOwnWords, onClick: () => goToFaq(), showSpeaker: true, speakText: t.askOwnWords },
     { icon: '📋', label: t.askFollowUps, onClick: () => goToFollowUps(), showSpeaker: true, speakText: t.askFollowUps },
   ];
   const askOptions = askOptionDefs.map((o, i) => ({
@@ -409,7 +413,6 @@ export default function CbcApp() {
     select: () => selectCategory(c.id),
   }));
 
-  const numbersToggleLabel = showNumbers ? t.hideNumbers : t.seeNumbers;
   const showAskTranscript = askListening || !!askTranscript;
 
   let greenIdx = 0;
@@ -439,48 +442,21 @@ export default function CbcApp() {
     };
   });
 
-  const healthPicTier = healthPictureTier();
-  const healthPicStatusColors = {
-    green: { bg: '#E8F5E9', border: '#27AE60' },
-    amber: { bg: '#FFF8E1', border: '#F39C12' },
-    red: { bg: '#FFEBEE', border: '#E74C3C' },
-  }[healthPicTier];
-  const healthPicBullets = CAT_DEFS.map((c) => ({
-    id: c.id,
-    icon: PARAMS[c.id].flag === 'within' ? '✓' : '⚠',
-    text: healthPictureBulletText(c.id),
-  }));
-
-  const detailedParamGroups = CAT_DEFS.map((c) => {
-    const pills = DETAILED_PARAMS[c.id].map((p) => ({
-      id: p.id,
-      label: subParamLabel(p.id),
-      value: formatValueUnit(p.value, p.unit),
-      rangeLine: `${p.low}–${p.high}${p.unit === '%' ? '%' : ' ' + p.unit}`,
-      flag: p.flag,
-      barColor: p.flag === 'within' ? '#4CAF50' : '#F44336',
-      onClick: () => goToResultDirect(c.id),
-    }));
-    const abnormalInGroup = pills.filter((p) => p.flag !== 'within').length;
-    const borderColor = abnormalInGroup === 0 ? '#4CAF50' : abnormalInGroup === 1 ? '#FFC107' : '#F44336';
-    const caption = c.id === 'rbc' ? t.captionRbc : c.id === 'wbc' ? t.captionWbc : t.captionPlt;
-    return { id: c.id, caption, borderColor, pills };
-  });
-
-  const radialCategories = CAT_DEFS.map((c) => ({
-    id: c.id,
-    shortLabel: c.id.toUpperCase(),
-    statusColor: flagColorFor(PARAMS[c.id].flag),
-    onClick: () => selectCategory(c.id),
-  }));
-
   const followUpsSections = followUpsSectionsData().map((section) => ({
     ...section,
     speak: () => speak([section.heading, ...section.items].join('. '), lang.code),
   }));
 
   return (
-    <PhoneFrame showProgress={screen !== 'lang'} progressSteps={progressSteps}>
+    <PhoneFrame
+      showProgress={screen !== 'lang'}
+      progressSteps={progressSteps}
+      topBar={
+        screen !== 'lang' ? (
+          <TopNavBar onBack={goBack} languageLabel={`Voice: ${lang.short}`} onLanguageClick={goToLangScreen} />
+        ) : null
+      }
+    >
       {screen === 'lang' && <LangScreen languages={languages} />}
 
       {screen === 'opening' && (
@@ -490,22 +466,9 @@ export default function CbcApp() {
           patientReportLabel={t.patientReportLabel}
           exploreReport={exploreReport}
           listenToReport={listenToReport}
-        />
-      )}
-
-      {screen === 'healthPicture' && (
-        <HealthPictureScreen
-          t={t}
-          statusTier={healthPicTier}
-          statusBg={healthPicStatusColors.bg}
-          statusBorder={healthPicStatusColors.border}
-          greeting={t.healthPicGreeting}
-          summaryLine={healthPictureSummaryLine(healthPicTier)}
-          bulletLines={healthPicBullets}
-          paramGroups={detailedParamGroups}
-          centerLabel={t.healthPicReportCenterLabel}
-          radialCategories={radialCategories}
-          goToOverview={goToOverview}
+          audioMode={audioMode}
+          enableAudioMode={enableAudioMode}
+          langCode={lang.code}
         />
       )}
 
@@ -521,29 +484,30 @@ export default function CbcApp() {
           speakConceptDesc={() => speak(categoryName(category) + '. ' + categoryDesc(category), lang.code)}
           t={t}
           goToResult={goToResult}
+          goToParamResult={goToParamResult}
         />
       )}
 
       {screen === 'result' && (
         <ResultScreen
-          backToConcept={backToConcept}
           flagColor={flagColor}
           resultHeading={resultHeading}
           paramDesc={paramDesc}
           t={t}
           gaugePercent={gaugePercent}
           flagBg={flagBg}
-          resultStatusLine={resultStatusLine}
-          speakResultLine={() => speak(resultStatusLine, lang.code)}
-          toggleNumbers={toggleNumbers}
-          numbersToggleLabel={numbersToggleLabel}
-          showNumbers={showNumbers}
           paramValueLine={paramValueLine}
           paramRangeLine={paramRangeLine}
           goToAsk={goToAsk}
           goToSaved={goToSaved}
           showWbcBreakdown={category === 'wbc'}
           goToWbcBreakdown={goToWbcDifferential}
+          category={category}
+          paramId={paramId}
+          paramShortLabel={paramShortLabel}
+          audioMode={audioMode}
+          langCode={lang.code}
+          languageLabel={lang.label}
         />
       )}
 
@@ -572,6 +536,8 @@ export default function CbcApp() {
       )}
 
       {screen === 'followUps' && <FollowUpsScreen backToAsk={backToAsk} t={t} sections={followUpsSections} />}
+
+      {screen === 'faq' && <FAQScreen backToAsk={backToAsk} />}
 
       {screen === 'explanation' && (
         <ExplanationScreen

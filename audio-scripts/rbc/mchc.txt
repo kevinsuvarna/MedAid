@@ -1,0 +1,9 @@
+MCHC stands for Mean Corpuscular Haemoglobin Concentration. It tells us how concentrated, or packed, the haemoglobin is inside your red blood cells.
+
+Think of it like this. MCH tells you the total amount of haemoglobin in one cell. MCHC tells you how densely it is packed inside that cell. A cell could have a normal amount of haemoglobin but be very large, making it less concentrated.
+
+This value is in the CBC report because it helps detect specific types of anaemia. Very low MCHC can indicate iron deficiency. Very high MCHC can sometimes point to a condition where red blood cells break down too easily.
+
+Your MCHC is [VALUE] grams per decilitre. The normal range is 32 to 36 grams per decilitre.
+
+Doctors usually look at MCHC together with MCV and MCH for a complete picture. On its own it rarely causes concern.

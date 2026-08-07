@@ -1,0 +1,9 @@
+MCV stands for Mean Corpuscular Volume. It tells us the average size of your red blood cells.
+
+Healthy red blood cells are a certain size. If they are too small, it often means your body is short of iron. If they are too large, it can mean your body is low on Vitamin B12 or folate.
+
+This measurement is important because the size of your red blood cells tells doctors why your haemoglobin might be low, not just that it is low. It helps your doctor find the right cause and give you the right treatment.
+
+Your MCV is [VALUE] femtolitres. The normal range is 80 to 100 femtolitres.
+
+Small red blood cells often improve with iron-rich foods or supplements. Large red blood cells often improve with Vitamin B12 or folate. Your doctor will advise which applies to you.

@@ -1,0 +1,9 @@
+RDW-CV stands for Red Cell Distribution Width. It tells us how much the sizes of your red blood cells vary from one another.
+
+In a healthy person, red blood cells are mostly the same size. A high RDW means there is a wide variety of sizes, with some cells much smaller or larger than others. This unevenness is often the first sign that something is changing in the body before other values shift.
+
+This is included in the CBC report because it is a sensitive early indicator. It can help doctors detect the beginning of iron deficiency, Vitamin B12 deficiency, or certain other conditions, sometimes even before you feel any symptoms.
+
+Your RDW-CV is [VALUE] percent. The normal range is 11.5 to 14.5 percent.
+
+A slightly raised RDW on its own is not usually a cause for worry. Your doctor will look at it alongside your other red blood cell values before drawing any conclusion.
