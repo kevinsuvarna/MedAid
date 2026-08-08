@@ -1,10 +1,18 @@
 import CategoryIcon from '@/components/icons/CategoryIcon';
-import { DETAILED_PARAMS, CATEGORY_TAGLINES } from '@/lib/data';
+import { CATEGORY_TAGLINES, PARAMS, WBC_DIFFERENTIAL } from '@/lib/data';
+
+function tierFor(id) {
+  if (id === 'wbc') {
+    return WBC_DIFFERENTIAL.some((seg) => seg.flag !== 'within') ? 'amber' : 'green';
+  }
+  return PARAMS[id].flag === 'within' ? 'green' : 'amber';
+}
 
 function borderColorFor(id) {
-  const params = DETAILED_PARAMS[id] || [];
-  const allNormal = params.every((p) => p.flag === 'within');
-  return allNormal ? '#4CAF50' : '#F44336';
+  const tier = tierFor(id);
+  if (tier === 'green') return '#4CAF50';
+  if (tier === 'amber') return '#FFC107';
+  return '#F44336';
 }
 
 export default function OverviewScreen({ t, categories }) {

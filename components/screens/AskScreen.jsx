@@ -1,5 +1,4 @@
 export default function AskScreen({
-  backToResult,
   t,
   askOptions,
   showAskTranscript,
@@ -9,14 +8,11 @@ export default function AskScreen({
 }) {
   return (
     <div className="flex flex-col flex-1 pt-4 px-[22px] pb-[22px]" style={{ animation: 'fadeIn 0.3s ease' }}>
-      <div className="flex items-center gap-[10px]">
-        <div className="text-[24px] text-[#6B7280] cursor-pointer p-1" onClick={backToResult}>‹</div>
-        <div className="text-[19px] font-extrabold text-[#1A1A2E]">{t.askTitle}</div>
-      </div>
-      <div className="text-[14px] text-[#9CA3AF] mt-[6px] ml-[38px] font-medium">{t.askSubtitle}</div>
+      <div className="text-[19px] font-extrabold text-[#1A1A2E]">{t.askTitle}</div>
+      <div className="text-[14px] text-[#9CA3AF] mt-[6px] font-medium">{t.askSubtitle}</div>
 
       <div className="flex flex-col gap-3 mt-[22px]">
-        {askOptions.map((opt, i) => (
+        {askOptions.filter((opt) => opt.label !== t.askOwnWords).map((opt, i) => (
           <div
             key={i}
             className="flex items-center gap-3 bg-white rounded-[18px] px-[18px] py-4 cursor-pointer"

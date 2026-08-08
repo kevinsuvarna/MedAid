@@ -16,6 +16,8 @@ import AskScreen from '@/components/screens/AskScreen';
 import ExplanationScreen from '@/components/screens/ExplanationScreen';
 import FollowUpsScreen from '@/components/screens/FollowUpsScreen';
 import FAQScreen from '@/components/screens/FAQScreen';
+import DoctorQuestionsScreen from '@/components/screens/DoctorQuestionsScreen';
+import WhyMeasuredScreen from '@/components/screens/WhyMeasuredScreen';
 import SavedScreen from '@/components/screens/SavedScreen';
 
 const WBC_NORMAL_GREENS = ['#2ECC71', '#27AE60', '#1E8449'];
@@ -276,6 +278,14 @@ export default function CbcApp() {
     pushHistory();
     setScreen('faq');
   }
+  function goToDoctorQuestions() {
+    pushHistory();
+    setScreen('doctorQuestions');
+  }
+  function goToWhyMeasured() {
+    pushHistory();
+    setScreen('whyMeasured');
+  }
   function goToAsk() {
     pushHistory();
     setScreen('ask');
@@ -287,6 +297,10 @@ export default function CbcApp() {
   function backToResult() {
     popHistory();
     setScreen('result');
+  }
+  function backToConcept() {
+    popHistory();
+    setScreen('concept');
   }
   function backToAsk() {
     popHistory();
@@ -339,7 +353,8 @@ export default function CbcApp() {
   }
 
   const param = category ? PARAMS[category] : null;
-  const stepIdx = screen === 'faq' ? SCREEN_STEP.ask : SCREEN_STEP[screen];
+  const stepIdx =
+    screen === 'faq' || screen === 'doctorQuestions' || screen === 'whyMeasured' ? SCREEN_STEP.ask : SCREEN_STEP[screen];
   const progressSteps = [0, 1, 2, 3].map((i) => ({
     color: stepIdx !== undefined && i <= stepIdx ? '#C0392B' : '#F0DCD3',
   }));
@@ -387,8 +402,8 @@ export default function CbcApp() {
 
   const askOptionDefs = [
     { icon: '💬', label: t.askWhatMeans, onClick: () => goToExplanation(), showSpeaker: true, speakText: t.askWhatMeans },
-    { icon: '💬', label: t.askWhyMeasured, onClick: () => speak(t.askWhyMeasured, lang.code), showSpeaker: true, speakText: t.askWhyMeasured },
-    { icon: '💬', label: t.askAskDoctor, onClick: () => speak(t.askAskDoctor, lang.code), showSpeaker: true, speakText: t.askAskDoctor },
+    { icon: '💬', label: t.askWhyMeasured, onClick: () => goToWhyMeasured(), showSpeaker: true, speakText: t.askWhyMeasured },
+    { icon: '💬', label: t.askAskDoctor, onClick: () => goToDoctorQuestions(), showSpeaker: true, speakText: t.askAskDoctor },
     { icon: '🎙️', label: t.askOwnWords, onClick: () => goToFaq(), showSpeaker: true, speakText: t.askOwnWords },
     { icon: '📋', label: t.askFollowUps, onClick: () => goToFollowUps(), showSpeaker: true, speakText: t.askFollowUps },
   ];
@@ -485,6 +500,10 @@ export default function CbcApp() {
           t={t}
           goToResult={goToResult}
           goToParamResult={goToParamResult}
+          audioMode={audioMode}
+          langCode={lang.code}
+          goToFaq={goToFaq}
+          goToAsk={goToAsk}
         />
       )}
 
@@ -537,7 +556,11 @@ export default function CbcApp() {
 
       {screen === 'followUps' && <FollowUpsScreen backToAsk={backToAsk} t={t} sections={followUpsSections} />}
 
-      {screen === 'faq' && <FAQScreen backToAsk={backToAsk} />}
+      {screen === 'faq' && <FAQScreen backToConcept={backToConcept} />}
+
+      {screen === 'doctorQuestions' && <DoctorQuestionsScreen t={t} langCode={lang.code} />}
+
+      {screen === 'whyMeasured' && <WhyMeasuredScreen category={category} langCode={lang.code} t={t} />}
 
       {screen === 'explanation' && (
         <ExplanationScreen

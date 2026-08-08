@@ -1,7 +1,6 @@
 import ExplanationDiagram from '@/components/icons/ExplanationDiagram';
 
 export default function ExplanationScreen({
-  backToAsk,
   t,
   explanationParamLabel,
   explanationFacts,
@@ -12,11 +11,8 @@ export default function ExplanationScreen({
 }) {
   return (
     <div className="flex flex-col flex-1 pt-4 px-[22px] pb-[22px]" style={{ animation: 'fadeIn 0.3s ease' }}>
-      <div className="flex items-center gap-[10px]">
-        <div className="text-[24px] text-[#6B7280] cursor-pointer p-1" onClick={backToAsk}>‹</div>
-        <div className="text-[19px] font-extrabold text-[#1A1A2E]">{t.explanationTitle}</div>
-      </div>
-      <div className="text-[14.5px] text-[#6B7280] mt-[6px] ml-[38px] font-bold">{explanationParamLabel}</div>
+      <div className="text-[19px] font-extrabold text-[#1A1A2E]">{t.explanationTitle}</div>
+      <div className="text-[14.5px] text-[#6B7280] mt-[6px] font-bold">{explanationParamLabel}</div>
 
       <div className="flex flex-col gap-3 mt-5">
         {explanationFacts.map((fact, i) => (

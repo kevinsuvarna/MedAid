@@ -23,6 +23,51 @@ function statusFromFlagColor(flagColor, flagBg) {
   return { label: 'GOOD', pillBg: flagBg, pillColor: flagColor };
 }
 
+export function gaugePercentFor(param) {
+  const { value, low, high, flag } = param;
+  if (flag === 'below') {
+    const pct = Math.max(0, Math.min(1, value / low)) * 25;
+    return Math.min(23, Math.max(2, pct));
+  }
+  if (flag === 'above') {
+    const span = high * 0.5 || 1;
+    const pct = 75 + Math.max(0, Math.min(1, (value - high) / span)) * 25;
+    return Math.min(98, Math.max(77, pct));
+  }
+  const pct = 25 + Math.max(0, Math.min(1, (value - low) / (high - low))) * 50;
+  return Math.min(73, Math.max(27, pct));
+}
+
+export function flagColorFor(flag) {
+  if (flag === 'below') return '#E74C3C';
+  if (flag === 'above') return '#F39C12';
+  return '#27AE60';
+}
+
+export function ResultGauge({ gaugePercent, flagColor, patientValue, low, high }) {
+  return (
+    <div className="relative mt-[22px]">
+      <div
+        className="absolute -top-[22px] text-[13px] font-bold whitespace-nowrap"
+        style={{ left: `${gaugePercent}%`, transform: 'translateX(-50%)', color: flagColor }}
+      >
+        {patientValue}
+      </div>
+      <div className="relative h-[10px] rounded-[6px] bg-[linear-gradient(90deg,#E74C3C_0%,#27AE60_50%,#F39C12_100%)]">
+        <div
+          className="absolute top-1/2 w-[22px] h-[22px] rounded-full border-4 border-white shadow-[0_3px_10px_rgba(0,0,0,0.25)]"
+          style={{ left: `${gaugePercent}%`, transform: 'translate(-50%,-50%)', background: flagColor }}
+        />
+      </div>
+      <div className="flex justify-between text-[11px] font-bold mt-[8px]">
+        <span style={{ color: '#E74C3C' }}>LOW ({low})</span>
+        <span style={{ color: '#27AE60' }}>NORMAL (HEALTHY)</span>
+        <span style={{ color: '#E74C3C' }}>HIGH ({high})</span>
+      </div>
+    </div>
+  );
+}
+
 function estimateDuration(text) {
   const words = text.trim().split(/\s+/).length;
   const totalSeconds = Math.max(10, Math.round((words / 150) * 60));
@@ -89,7 +134,6 @@ export default function ResultScreen({
   paramValueLine,
   paramRangeLine,
   goToAsk,
-  goToSaved,
   showWbcBreakdown,
   goToWbcBreakdown,
   category,
@@ -180,25 +224,7 @@ export default function ResultScreen({
           </div>
         </div>
 
-        <div className="relative mt-[22px]">
-          <div
-            className="absolute -top-[22px] text-[13px] font-bold whitespace-nowrap"
-            style={{ left: `${gaugePercent}%`, transform: 'translateX(-50%)', color: flagColor }}
-          >
-            {patientValue}
-          </div>
-          <div className="relative h-[10px] rounded-[6px] bg-[linear-gradient(90deg,#E74C3C_0%,#27AE60_50%,#F39C12_100%)]">
-            <div
-              className="absolute top-1/2 w-[22px] h-[22px] rounded-full border-4 border-white shadow-[0_3px_10px_rgba(0,0,0,0.25)]"
-              style={{ left: `${gaugePercent}%`, transform: 'translate(-50%,-50%)', background: flagColor }}
-            />
-          </div>
-          <div className="flex justify-between text-[11px] font-bold mt-[8px]">
-            <span style={{ color: '#E74C3C' }}>LOW ({low})</span>
-            <span style={{ color: '#27AE60' }}>NORMAL (HEALTHY)</span>
-            <span style={{ color: '#E74C3C' }}>HIGH ({high})</span>
-          </div>
-        </div>
+        <ResultGauge gaugePercent={gaugePercent} flagColor={flagColor} patientValue={patientValue} low={low} high={high} />
 
         <div className="border-t border-[#F3EDE8] my-5" />
 
@@ -230,20 +256,12 @@ export default function ResultScreen({
       </div>
 
       <div className="flex-1" />
-      <div className="flex gap-3 mt-6">
-        <button
-          className="flex-1 bg-transparent text-[#C0392B] border-[1.5px] border-[#F0DCD3] rounded-[27px] px-[10px] py-[15px] text-[14px] font-bold cursor-pointer min-h-[52px] flex items-center justify-center gap-[6px]"
-          onClick={goToAsk}
-        >
-          💬 More
-        </button>
-        <button
-          className="flex-1 bg-transparent text-[#C0392B] border-[1.5px] border-[#F0DCD3] rounded-[27px] px-[10px] py-[15px] text-[14px] font-bold cursor-pointer min-h-[52px] flex items-center justify-center gap-[6px]"
-          onClick={goToSaved}
-        >
-          🔖 {t.saveForLater}
-        </button>
-      </div>
+      <button
+        className="w-full mt-6 bg-transparent text-[#C0392B] border-[1.5px] border-[#F0DCD3] rounded-[27px] px-[10px] py-[15px] text-[14px] font-bold cursor-pointer min-h-[52px] flex items-center justify-center gap-[6px]"
+        onClick={goToAsk}
+      >
+        💬 More
+      </button>
 
       {showWbcBreakdown && (
         <button
