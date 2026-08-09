@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { PARAMS, WBC_DIFFERENTIAL } from '@/lib/data';
+import { tierForGroup } from '@/lib/reportAdapter';
 import { speak, stopSpeech } from '@/lib/speech';
 
 const SUMMARY_CELLS = [
@@ -7,13 +7,6 @@ const SUMMARY_CELLS = [
   { id: 'wbc', icon: '🛡️', label1: 'Defense:' },
   { id: 'plt', icon: '🩹', label1: 'Clotting:' },
 ];
-
-function tierFor(id) {
-  if (id === 'wbc') {
-    return WBC_DIFFERENTIAL.some((seg) => seg.flag !== 'within') ? 'amber' : 'green';
-  }
-  return PARAMS[id].flag === 'within' ? 'green' : 'amber';
-}
 
 function statusLabelFor(tier) {
   if (tier === 'green') return 'All Good';
@@ -34,6 +27,8 @@ function badgeIconFor(tier) {
 export default function OpeningScreen({
   t,
   patientReportLabel,
+  reportMeta,
+  reportData,
   exploreReport,
   audioMode,
   enableAudioMode,
@@ -42,7 +37,7 @@ export default function OpeningScreen({
   const [isPlaying, setIsPlaying] = useState(false);
   const isFirstRender = useRef(true);
 
-  const cellTiers = SUMMARY_CELLS.map((cell) => ({ ...cell, tier: tierFor(cell.id) }));
+  const cellTiers = SUMMARY_CELLS.map((cell) => ({ ...cell, tier: tierForGroup(reportData, cell.id) }));
 
   const narrationText = cellTiers.map((cell) => `${cell.label1} ${statusLabelFor(cell.tier)}`).join('. ');
 
@@ -104,7 +99,7 @@ export default function OpeningScreen({
 
       <div id="opening-summary-card" className="bg-[#F5EDE3] rounded-[20px] p-5 shadow-[0_4px_16px_rgba(0,0,0,0.08)] mt-6">
         <div className="text-[15px] font-bold text-[#1A1A2E]">{patientReportLabel}</div>
-        <div className="text-[13px] text-[#9CA3AF] mt-1">{t.reportMeta}</div>
+        <div className="text-[13px] text-[#9CA3AF] mt-1">{reportMeta}</div>
 
         <div className="border-t border-[#E0D5C7] my-4" />
 

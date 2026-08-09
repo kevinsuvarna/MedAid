@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { DETAILED_PARAMS, WBC_DIFFERENTIAL } from '@/lib/data';
+import { getParam, CATEGORY_PARAM_IDS } from '@/lib/reportAdapter';
 import { speak, stopSpeech } from '@/lib/speech';
 import { callGroq } from '@/lib/groqClient';
+import { USE_MOCK, MOCK_DOCTOR_QUESTIONS } from '@/lib/config';
 
 const PARAM_LABELS = {
   rbcCount: 'Total RBC Count',
@@ -30,19 +31,13 @@ function flagWord(flag) {
   return 'normal';
 }
 
-function allParamRows() {
+function allParamRows(reportData) {
   const rows = [];
   ['rbc', 'wbc', 'plt'].forEach((cat) => {
-    const seen = new Set();
-    (DETAILED_PARAMS[cat] || []).forEach((p) => {
-      rows.push(p);
-      seen.add(p.id);
+    (CATEGORY_PARAM_IDS[cat] || []).forEach((id) => {
+      const row = getParam(reportData, cat, id);
+      if (row) rows.push(row);
     });
-    if (cat === 'wbc') {
-      WBC_DIFFERENTIAL.forEach((p) => {
-        if (!seen.has(p.id)) rows.push(p);
-      });
-    }
   });
   return rows;
 }
@@ -62,7 +57,7 @@ function parseResponse(text) {
   return questions.length ? { intro, questions } : { intro: '', questions: [trimmed] };
 }
 
-export default function DoctorQuestionsScreen({ t, langCode }) {
+export default function DoctorQuestionsScreen({ t, langCode, reportData }) {
   const [loading, setLoading] = useState(true);
   const [intro, setIntro] = useState('');
   const [questions, setQuestions] = useState([]);
@@ -70,7 +65,15 @@ export default function DoctorQuestionsScreen({ t, langCode }) {
   useEffect(() => {
     let cancelled = false;
     async function load() {
-      const valuesList = allParamRows()
+      if (USE_MOCK) {
+        if (!cancelled) {
+          setIntro(MOCK_DOCTOR_QUESTIONS.intro);
+          setQuestions(MOCK_DOCTOR_QUESTIONS.questions);
+          setLoading(false);
+        }
+        return;
+      }
+      const valuesList = allParamRows(reportData)
         .map((row) => `${PARAM_LABELS[row.id] || row.id}: ${row.value} ${row.unit} (${flagWord(row.flag)})`)
         .join('; ');
       const userPrompt = `CBC results: ${valuesList}. What should this patient ask their doctor?`;

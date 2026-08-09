@@ -1,21 +1,15 @@
 import CategoryIcon from '@/components/icons/CategoryIcon';
-import { CATEGORY_TAGLINES, PARAMS, WBC_DIFFERENTIAL } from '@/lib/data';
+import { CATEGORY_TAGLINES } from '@/lib/data';
+import { tierForGroup } from '@/lib/reportAdapter';
 
-function tierFor(id) {
-  if (id === 'wbc') {
-    return WBC_DIFFERENTIAL.some((seg) => seg.flag !== 'within') ? 'amber' : 'green';
-  }
-  return PARAMS[id].flag === 'within' ? 'green' : 'amber';
-}
-
-function borderColorFor(id) {
-  const tier = tierFor(id);
+function borderColorFor(reportData, id) {
+  const tier = tierForGroup(reportData, id);
   if (tier === 'green') return '#4CAF50';
   if (tier === 'amber') return '#FFC107';
   return '#F44336';
 }
 
-export default function OverviewScreen({ t, categories }) {
+export default function OverviewScreen({ t, categories, reportData }) {
   return (
     <div className="flex flex-col flex-1 pt-5 px-[22px] pb-[22px]" style={{ animation: 'fadeIn 0.3s ease' }}>
       <div className="text-[23px] font-extrabold text-[#1A1A2E] leading-[1.3]">{t.overviewTitle}</div>
@@ -25,7 +19,7 @@ export default function OverviewScreen({ t, categories }) {
           <div
             key={cat.id}
             className="flex items-center gap-4 bg-white rounded-[20px] p-5 cursor-pointer shadow-[0_4px_16px_rgba(0,0,0,0.08)] relative"
-            style={{ border: `2px solid ${borderColorFor(cat.id)}` }}
+            style={{ border: `2px solid ${borderColorFor(reportData, cat.id)}` }}
             onClick={cat.select}
           >
             <div className="w-[54px] h-[54px] rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: cat.bg }}>

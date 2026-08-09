@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { DETAILED_PARAMS, WBC_DIFFERENTIAL } from '@/lib/data';
+import { getParam } from '@/lib/reportAdapter';
 import { speak, stopSpeech } from '@/lib/speech';
 import { callGroq } from '@/lib/groqClient';
+import { USE_MOCK } from '@/lib/config';
 import { ResultGauge, gaugePercentFor, flagColorFor } from '@/components/screens/ResultScreen';
 
 const LISTEN_SYSTEM_PROMPT =
@@ -57,18 +58,14 @@ const PARAM_INSIGHTS = {
 
 const CATEGORY_NOUN = { rbc: 'red cell', wbc: 'white cell', plt: 'platelet' };
 
-function paramRowsFor(category) {
+function paramRowsFor(category, reportData) {
   const config = PARAM_ROWS_CONFIG[category] || [];
-  const dataById = {};
-  (DETAILED_PARAMS[category] || []).forEach((p) => {
-    dataById[p.id] = p;
-  });
-  if (category === 'wbc') {
-    WBC_DIFFERENTIAL.forEach((p) => {
-      if (!dataById[p.id]) dataById[p.id] = p;
-    });
-  }
-  return config.filter((row) => dataById[row.id]).map((row) => ({ ...row, ...dataById[row.id] }));
+  return config
+    .map((row) => {
+      const data = getParam(reportData, category, row.id);
+      return data ? { ...row, ...data } : null;
+    })
+    .filter(Boolean);
 }
 
 function statusSummaryFor(category, hasAbnormal) {
@@ -83,6 +80,7 @@ export default function ConceptScreen({
   category,
   currentCategoryDesc,
   t,
+  reportData,
   audioMode,
   langCode,
   goToFaq,
@@ -91,7 +89,7 @@ export default function ConceptScreen({
   const [expandedId, setExpandedId] = useState(null);
   const [isListenLoading, setIsListenLoading] = useState(false);
 
-  const rows = paramRowsFor(category);
+  const rows = paramRowsFor(category, reportData);
   const abnormalRows = rows.filter((row) => row.flag !== 'within');
   const hasAbnormal = abnormalRows.length > 0;
   const statusSummary = statusSummaryFor(category, hasAbnormal);
@@ -109,7 +107,7 @@ export default function ConceptScreen({
 
   useEffect(() => {
     let timer;
-    if (audioMode) {
+    if (!USE_MOCK && audioMode) {
       timer = setTimeout(() => playListenSummary(), 1000);
     }
     return () => {

@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { LANG_META, T } from '@/lib/translations';
-import { CAT_DEFS, PARAMS, SCREEN_STEP, FACTS, WBC_DIFFERENTIAL, CATEGORY_TAGLINES } from '@/lib/data';
+import { CAT_DEFS, SCREEN_STEP, FACTS, CATEGORY_TAGLINES } from '@/lib/data';
+import { getParam, getWbcDifferentialRows } from '@/lib/reportAdapter';
+import { extractReportData, clearReportCache } from '@/lib/pdfExtractor';
+import { USE_MOCK, MOCK_DATA } from '@/lib/config';
 import { speak, stopSpeech, startVoiceInput as startVoiceInputHelper } from '@/lib/speech';
 import PhoneFrame from '@/components/PhoneFrame';
 import TopNavBar from '@/components/TopNavBar';
@@ -19,6 +22,8 @@ import FAQScreen from '@/components/screens/FAQScreen';
 import DoctorQuestionsScreen from '@/components/screens/DoctorQuestionsScreen';
 import WhyMeasuredScreen from '@/components/screens/WhyMeasuredScreen';
 import SavedScreen from '@/components/screens/SavedScreen';
+import LoadingScreen from '@/components/screens/LoadingScreen';
+import ReportErrorScreen from '@/components/screens/ReportErrorScreen';
 
 const WBC_NORMAL_GREENS = ['#2ECC71', '#27AE60', '#1E8449'];
 const WBC_HIGH_COLOR = '#E74C3C';
@@ -56,11 +61,11 @@ function flagBgFor(flag) {
   return '#E9F7EF';
 }
 
-export default function CbcApp() {
-  const [screen, setScreen] = useState('lang');
+export default function CbcApp({ initialScreen = 'lang', initialCategory = null, preview = false } = {}) {
+  const [screen, setScreen] = useState(initialScreen);
   const [langId, setLangId] = useState('en');
   const [audioMode, setAudioMode] = useState(false);
-  const [category, setCategory] = useState(null);
+  const [category, setCategory] = useState(initialCategory);
   const [narrateIndex, setNarrateIndex] = useState(-1);
   const [narrateAskIndex, setNarrateAskIndex] = useState(-1);
   const [askTranscript, setAskTranscript] = useState('');
@@ -69,6 +74,35 @@ export default function CbcApp() {
   const [feedbackGiven, setFeedbackGiven] = useState(false);
   const [history, setHistory] = useState([]);
   const [selectedParam, setSelectedParam] = useState(null);
+  const [reportData, setReportData] = useState(null);
+  const [loadState, setLoadState] = useState(preview ? 'ready' : 'loading');
+
+  async function loadReport({ forceRefresh = false } = {}) {
+    setLoadState('loading');
+    if (USE_MOCK) {
+      setReportData(MOCK_DATA);
+      setLoadState('ready');
+      return;
+    }
+    const data = await extractReportData({ forceRefresh });
+    if (data) {
+      setReportData(data);
+      setLoadState('ready');
+    } else {
+      setLoadState('error');
+    }
+  }
+
+  function retryLoadReport() {
+    clearReportCache();
+    loadReport({ forceRefresh: true });
+  }
+
+  useEffect(() => {
+    if (preview) return;
+    loadReport();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const lang = LANG_META.find((l) => l.id === langId) || LANG_META[0];
   const t = T[langId] || T.en;
@@ -96,7 +130,7 @@ export default function CbcApp() {
     return '';
   }
   function resultStatusText() {
-    const param = PARAMS[category];
+    const param = category ? getParam(reportData, category, CATEGORY_PRIMARY_PARAM_ID[category]) : null;
     if (!param) return '';
     const statusWord = t[param.flag];
     return `${resultHeadingText()}. ${resultDescText()} Your result is ${statusWord} the reference range.`;
@@ -133,7 +167,7 @@ export default function CbcApp() {
   }
 
   function wbcDifferentialNarrationText() {
-    const lines = WBC_DIFFERENTIAL.map((seg) => {
+    const lines = getWbcDifferentialRows(reportData).map((seg) => {
       const name = subParamLabel(seg.id);
       if (seg.flag === 'within') return `${name} ${seg.value}%`;
       const word = seg.flag === 'above' ? t.wbcDiffHighWord : t.wbcDiffLowWord;
@@ -352,7 +386,7 @@ export default function CbcApp() {
     });
   }
 
-  const param = category ? PARAMS[category] : null;
+  const param = category ? getParam(reportData, category, CATEGORY_PRIMARY_PARAM_ID[category]) : null;
   const stepIdx =
     screen === 'faq' || screen === 'doctorQuestions' || screen === 'whyMeasured' ? SCREEN_STEP.ask : SCREEN_STEP[screen];
   const progressSteps = [0, 1, 2, 3].map((i) => ({
@@ -430,8 +464,10 @@ export default function CbcApp() {
 
   const showAskTranscript = askListening || !!askTranscript;
 
+  const wbcDifferentialRows = getWbcDifferentialRows(reportData);
+
   let greenIdx = 0;
-  const wbcDifferentialSegments = WBC_DIFFERENTIAL.map((seg) => {
+  const wbcDifferentialSegments = wbcDifferentialRows.map((seg) => {
     const name = subParamLabel(seg.id);
     let color;
     if (seg.flag === 'within') {
@@ -444,7 +480,7 @@ export default function CbcApp() {
     return { id: seg.id, label: `${name} ${seg.value}%${suffix}`, value: seg.value, color };
   });
 
-  const wbcAbnormalRows = WBC_DIFFERENTIAL.filter((seg) => seg.flag !== 'within').map((seg) => {
+  const wbcAbnormalRows = wbcDifferentialRows.filter((seg) => seg.flag !== 'within').map((seg) => {
     const isHigh = seg.flag === 'above';
     return {
       id: seg.id,
@@ -462,6 +498,25 @@ export default function CbcApp() {
     speak: () => speak([section.heading, ...section.items].join('. '), lang.code),
   }));
 
+  const patient = reportData ? reportData.patient : null;
+  const patientReportLabel = patient && patient.name ? `${patient.name} · CBC Report` : t.patientReportLabel;
+  const reportMetaLine = patient && patient.date ? `Complete Blood Count (CBC) · ${patient.date}` : t.reportMeta;
+
+  if (loadState === 'loading') {
+    return (
+      <PhoneFrame showProgress={false}>
+        <LoadingScreen />
+      </PhoneFrame>
+    );
+  }
+  if (loadState === 'error') {
+    return (
+      <PhoneFrame showProgress={false}>
+        <ReportErrorScreen onRetry={retryLoadReport} />
+      </PhoneFrame>
+    );
+  }
+
   return (
     <PhoneFrame
       showProgress={screen !== 'lang'}
@@ -478,7 +533,9 @@ export default function CbcApp() {
         <OpeningScreen
           languageLabel={lang.label}
           t={t}
-          patientReportLabel={t.patientReportLabel}
+          patientReportLabel={patientReportLabel}
+          reportMeta={reportMetaLine}
+          reportData={reportData}
           exploreReport={exploreReport}
           listenToReport={listenToReport}
           audioMode={audioMode}
@@ -487,7 +544,7 @@ export default function CbcApp() {
         />
       )}
 
-      {screen === 'overview' && <OverviewScreen t={t} categories={categories} />}
+      {screen === 'overview' && <OverviewScreen t={t} categories={categories} reportData={reportData} />}
 
       {screen === 'concept' && (
         <ConceptScreen
@@ -498,6 +555,7 @@ export default function CbcApp() {
           currentCategoryDesc={category ? categoryDesc(category) : ''}
           speakConceptDesc={() => speak(categoryName(category) + '. ' + categoryDesc(category), lang.code)}
           t={t}
+          reportData={reportData}
           goToResult={goToResult}
           goToParamResult={goToParamResult}
           audioMode={audioMode}
@@ -558,7 +616,7 @@ export default function CbcApp() {
 
       {screen === 'faq' && <FAQScreen backToConcept={backToConcept} />}
 
-      {screen === 'doctorQuestions' && <DoctorQuestionsScreen t={t} langCode={lang.code} />}
+      {screen === 'doctorQuestions' && <DoctorQuestionsScreen t={t} langCode={lang.code} reportData={reportData} />}
 
       {screen === 'whyMeasured' && <WhyMeasuredScreen category={category} langCode={lang.code} t={t} />}
 
