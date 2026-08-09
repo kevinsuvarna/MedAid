@@ -66,7 +66,7 @@ export default function LangScreen({ languages }) {
   return (
     <div
       className="flex flex-col flex-1"
-      style={{ animation: 'fadeIn 0.3s ease', background: 'linear-gradient(180deg, #F2F4FB 0%, #C7D4F0 100%)' }}
+      style={{ animation: 'fadeIn 0.3s ease', background: '#D7E0F5' }}
     >
       <div className="flex flex-col items-center pt-[36px] pb-[16px]">
         <GlobeIcon />

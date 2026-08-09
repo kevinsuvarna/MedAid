@@ -464,10 +464,10 @@ export default function CbcApp() {
 
   return (
     <PhoneFrame
-      showProgress={screen !== 'lang'}
+      showProgress={screen !== 'lang' && screen !== 'opening'}
       progressSteps={progressSteps}
       topBar={
-        screen !== 'lang' ? (
+        screen !== 'lang' && screen !== 'opening' ? (
           <TopNavBar onBack={goBack} languageLabel={`Voice: ${lang.short}`} onLanguageClick={goToLangScreen} />
         ) : null
       }
@@ -484,6 +484,8 @@ export default function CbcApp() {
           audioMode={audioMode}
           enableAudioMode={enableAudioMode}
           langCode={lang.code}
+          onBack={goBack}
+          onLanguageClick={goToLangScreen}
         />
       )}
 

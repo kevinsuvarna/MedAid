@@ -3,9 +3,9 @@ import { PARAMS, WBC_DIFFERENTIAL } from '@/lib/data';
 import { speak, stopSpeech } from '@/lib/speech';
 
 const SUMMARY_CELLS = [
-  { id: 'rbc', icon: '🩸', label1: 'O2 Levels:' },
-  { id: 'wbc', icon: '🛡️', label1: 'Defense:' },
-  { id: 'plt', icon: '🩹', label1: 'Clotting:' },
+  { id: 'rbc', label1: 'O2 Levels:' },
+  { id: 'wbc', label1: 'Defense:' },
+  { id: 'plt', label1: 'Clotting:' },
 ];
 
 function tierFor(id) {
@@ -21,23 +21,24 @@ function statusLabelFor(tier) {
   return 'Needs Attention';
 }
 
-function badgeColorFor(tier) {
-  if (tier === 'green') return '#4CAF50';
-  if (tier === 'amber') return '#FFC107';
-  return '#F44336';
-}
-
-function badgeIconFor(tier) {
-  return tier === 'green' ? '✓' : '⚠';
+function CheckCircleIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="12" fill="#2E7D32" />
+      <path d="M7 12.5L10.5 16L17 8.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
 }
 
 export default function OpeningScreen({
   t,
-  patientReportLabel,
   exploreReport,
   audioMode,
   enableAudioMode,
   langCode,
+  languageLabel,
+  onBack,
+  onLanguageClick,
 }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const isFirstRender = useRef(true);
@@ -74,10 +75,16 @@ export default function OpeningScreen({
     window.print();
   }
 
+  const [reportTypeLabel, reportDatePart] = (t.reportMeta || '')
+    .split('·')
+    .map((s) => s.trim());
+  const reportSubtitle = (reportTypeLabel || 'Complete Blood Count').replace(/\s*\(CBC\)\s*/i, '');
+  const reportDateTime = [reportDatePart, '09:30 AM'].filter(Boolean).join(' • ');
+
   return (
     <div
-      className="flex flex-col flex-1 min-h-0 overflow-y-auto pt-5 px-[22px] pb-[22px]"
-      style={{ animation: 'fadeIn 0.3s ease' }}
+      className="flex flex-col flex-1 relative"
+      style={{ animation: 'fadeIn 0.3s ease', background: '#D7E0F5' }}
     >
       <style>{`
         @media print {
@@ -87,98 +94,147 @@ export default function OpeningScreen({
         }
       `}</style>
 
-      <div className="w-[90px] h-[90px] rounded-full bg-[#FDDCCC] flex items-center justify-center mx-auto">
-        <svg width={54} height={54} viewBox="0 0 72 72">
-          <circle cx={36} cy={28} r={16} fill="#8C4A2E" />
-          <path d="M14 68 C14 46 24 40 36 40 C48 40 58 46 58 68 Z" fill="#3B4A6B" />
-          <circle cx={30} cy={27} r={2} fill="#2B1710" />
-          <circle cx={42} cy={27} r={2} fill="#2B1710" />
-          <path d="M29 34 Q36 39 43 34" stroke="#2B1710" strokeWidth={2} fill="none" strokeLinecap="round" />
-        </svg>
-      </div>
-
-      <div className="text-[26px] font-extrabold text-[#1A1A2E] text-center mt-4">{t.greeting}</div>
-      <div className="text-[15px] text-[#6B7280] font-medium text-center mt-2 max-w-[280px] mx-auto leading-[1.4]">
-        {t.openingLine}
-      </div>
-
-      <div id="opening-summary-card" className="bg-[#F5EDE3] rounded-[20px] p-5 shadow-[0_4px_16px_rgba(0,0,0,0.08)] mt-6">
-        <div className="text-[15px] font-bold text-[#1A1A2E]">{patientReportLabel}</div>
-        <div className="text-[13px] text-[#9CA3AF] mt-1">{t.reportMeta}</div>
-
-        <div className="border-t border-[#E0D5C7] my-4" />
-
-        <div className="text-[15px] font-bold text-[#1A1A2E] mb-3">Quick Summary</div>
-
-        <div className="flex gap-2">
-          {cellTiers.map((cell) => (
-            <div key={cell.id} className="flex-1 flex flex-col items-center text-center gap-1">
-              <div className="relative">
-                <span className="text-[32px]">{cell.icon}</span>
-                <span
-                  className="absolute -top-1 -right-1 w-[16px] h-[16px] rounded-full flex items-center justify-center text-white text-[10px] font-bold"
-                  style={{ background: badgeColorFor(cell.tier) }}
-                >
-                  {badgeIconFor(cell.tier)}
-                </span>
-              </div>
-              <div className="text-[11.5px] font-semibold text-[#1A1A2E] leading-tight mt-1">{cell.label1}</div>
-              <div className="text-[11.5px] font-semibold leading-tight" style={{ color: badgeColorFor(cell.tier) }}>
-                {statusLabelFor(cell.tier)}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <button
-        className="bg-[#E8735A] text-white border-none rounded-[26px] p-4 text-[16px] font-bold cursor-pointer min-h-[54px] shadow-[0_6px_18px_rgba(232,115,90,0.32)] mt-6"
-        onClick={exploreReport}
-      >
-        🖐 Tap to Explore Detailed Report
-      </button>
-
-      {audioMode ? (
-        <div className="mt-4">
-          <div className="bg-white rounded-full shadow-[0_4px_16px_rgba(0,0,0,0.08)] flex items-center gap-3 px-4 py-2">
-            <div
-              className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 cursor-pointer text-white"
-              style={{ background: '#E8735A' }}
-              onClick={handleTogglePlay}
-            >
-              <span className="text-[14px]">{isPlaying ? '⏸' : '▶'}</span>
-            </div>
-            <div className="flex items-center gap-[2px] flex-1 justify-center h-5">
-              {Array.from({ length: 20 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="w-[2px] bg-[#E8735A] rounded-full"
-                  style={{
-                    height: `${8 + (i % 5) * 3}px`,
-                    animation: isPlaying ? `pulseScale 0.9s ease-in-out ${(i % 6) * 0.08}s infinite` : 'none',
-                  }}
-                />
-              ))}
-            </div>
-            <span className="text-[12px] text-[#9CA3AF] font-semibold flex-shrink-0">1x</span>
-          </div>
-          <div className="text-[12px] text-[#9CA3AF] text-center mt-2">Listening to My Report (Narrated)</div>
-        </div>
-      ) : (
+      <div className="flex items-center justify-between px-5 pt-[26px]">
         <button
-          className="bg-white text-[#C0392B] border-[1.5px] border-[#F0DCD3] rounded-[27px] p-4 text-[16px] font-bold cursor-pointer min-h-[54px] mt-3"
-          onClick={enableAudioMode}
+          className="text-[20px] leading-none text-[#1A237E] bg-transparent border-none cursor-pointer"
+          onClick={onBack}
+          aria-label="Back"
         >
-          🔊 {t.listenCta}
+          ←
         </button>
-      )}
+        <div
+          className="flex items-center gap-[6px] bg-white rounded-full px-3 py-[6px] cursor-pointer shadow-[0_4px_12px_rgba(26,35,126,0.12)]"
+          onClick={onLanguageClick}
+        >
+          <span className="text-[13px] text-[#1A237E]">🔊</span>
+          <span className="text-[12px] font-bold text-[#1A237E]">{languageLabel}</span>
+        </div>
+      </div>
 
-      <button
-        className="bg-transparent text-[#9CA3AF] text-[13px] font-semibold text-center cursor-pointer border-none mt-3"
-        onClick={handleDownload}
+      <div className="relative flex flex-col items-center pt-4 pb-2">
+        <div className="relative w-[140px] h-[140px]">
+          <div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[140px] h-[140px] rounded-full"
+            style={{ border: '1.5px solid rgba(74,95,160,0.22)' }}
+          />
+          <div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[104px] h-[104px] rounded-full"
+            style={{ border: '1.5px solid rgba(74,95,160,0.38)' }}
+          />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[64px] h-[64px] rounded-full bg-white flex items-center justify-center shadow-[0_8px_20px_rgba(26,35,126,0.18)]">
+            <svg width="32" height="22" viewBox="0 0 60 40" fill="none">
+              <polyline
+                points="2,20 14,20 20,6 28,34 36,10 42,20 58,20"
+                fill="none"
+                stroke="#1A237E"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <svg className="w-full pointer-events-none" height="28" viewBox="0 0 390 28" preserveAspectRatio="none">
+        <path
+          d="M0,14 C32.5,-2 65,-2 97.5,14 C130,30 162.5,30 195,14 C227.5,-2 260,-2 292.5,14 C325,30 357.5,30 390,14"
+          fill="none"
+          stroke="#FFFFFF"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          opacity="0.85"
+        />
+      </svg>
+
+      <div
+        id="opening-summary-card"
+        className="relative flex flex-col flex-1 mx-auto mb-[14px] w-[90%] bg-white rounded-[24px] shadow-[0_8px_24px_rgba(26,35,126,0.14)] px-5 pt-6 pb-5 overflow-y-auto"
       >
-        ⬇ Download as PDF
-      </button>
+        <div className="flex justify-center">
+          <div className="inline-flex items-center gap-[6px] bg-[#E8F5E9] text-[#2E7D32] text-[12px] font-bold rounded-full px-3 py-[6px]">
+            <CheckCircleIcon />
+            <span>NFC DETECTED</span>
+          </div>
+        </div>
+
+        <div className="text-[22px] font-extrabold text-[#1A237E] text-center mt-4">Medical Report Found</div>
+        <div className="text-[13px] text-[#9CA3AF] text-center mt-1">
+          We found a report linked to this NFC tag.
+        </div>
+
+        <div className="border-t border-[#EEEEEE] my-5" />
+
+        <div className="flex items-center gap-3 bg-[#F7F8FC] rounded-[16px] px-4 py-3">
+          <div className="w-[44px] h-[44px] rounded-[12px] bg-white border-[1.5px] border-[#C7D3F0] flex items-center justify-center flex-shrink-0">
+            <svg width="20" height="24" viewBox="0 0 20 24" fill="none">
+              <path d="M3 1H13L17 5V23H3V1Z" stroke="#4C63D2" strokeWidth="1.5" strokeLinejoin="round" />
+              <path d="M13 1V5H17" stroke="#4C63D2" strokeWidth="1.5" strokeLinejoin="round" />
+              <line x1="6" y1="11" x2="14" y2="11" stroke="#4C63D2" strokeWidth="1.5" strokeLinecap="round" />
+              <line x1="6" y1="15" x2="14" y2="15" stroke="#4C63D2" strokeWidth="1.5" strokeLinecap="round" />
+              <line x1="6" y1="19" x2="11" y2="19" stroke="#4C63D2" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-[15px] font-extrabold text-[#1A237E]">CBC Blood Test</div>
+            <div className="text-[12px] text-[#9CA3AF] mt-[1px]">{reportSubtitle}</div>
+            <div className="text-[12px] text-[#9CA3AF]">{reportDateTime}</div>
+          </div>
+        </div>
+
+        <div className="flex-1 min-h-4" />
+
+        <button
+          className="w-full bg-[#1A237E] text-white border-none rounded-[30px] h-[54px] text-[15px] font-bold uppercase tracking-[0.04em] cursor-pointer mt-6"
+          onClick={exploreReport}
+        >
+          Check Report →
+        </button>
+
+        {audioMode ? (
+          <div className="mt-4">
+            <div className="bg-[#F7F8FC] rounded-full shadow-[0_4px_16px_rgba(26,35,126,0.08)] flex items-center gap-3 px-4 py-2">
+              <div
+                className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 cursor-pointer text-white"
+                style={{ background: '#1A237E' }}
+                onClick={handleTogglePlay}
+              >
+                <span className="text-[14px]">{isPlaying ? '⏸' : '▶'}</span>
+              </div>
+              <div className="flex items-center gap-[2px] flex-1 justify-center h-5">
+                {Array.from({ length: 20 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="w-[2px] bg-[#1A237E] rounded-full"
+                    style={{
+                      height: `${8 + (i % 5) * 3}px`,
+                      animation: isPlaying ? `pulseScale 0.9s ease-in-out ${(i % 6) * 0.08}s infinite` : 'none',
+                    }}
+                  />
+                ))}
+              </div>
+              <span className="text-[12px] text-[#9CA3AF] font-semibold flex-shrink-0">1x</span>
+            </div>
+            <div className="text-[12px] text-[#5C6BC0] text-center mt-2">Listening to My Report (Narrated)</div>
+          </div>
+        ) : (
+          <button
+            className="w-full bg-white text-[#1A237E] border-[1.5px] border-[#C7D3F0] rounded-[27px] h-[48px] text-[14px] font-bold cursor-pointer mt-4"
+            onClick={enableAudioMode}
+          >
+            🔊 {t.listenCta}
+          </button>
+        )}
+
+        <button
+          className="bg-transparent text-[#7C86B8] text-[13px] font-semibold text-center cursor-pointer border-none mt-3"
+          onClick={handleDownload}
+        >
+          ⬇ Download as PDF
+        </button>
+
+        <div className="text-[12px] text-[#9CA3AF] text-center mt-4">No personal data is stored on this tag.</div>
+      </div>
     </div>
   );
 }
