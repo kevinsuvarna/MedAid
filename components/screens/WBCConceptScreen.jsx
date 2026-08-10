@@ -86,7 +86,11 @@ export function SpeakerIcon() {
 function InfoIcon() {
   return (
     // eslint-disable-next-line @next/next/no-img-element
-    <img src="/icons/info.svg" alt="" style={{ width: 14, height: 23 }} />
+    <img
+      src="/icons/info.svg"
+      alt=""
+      style={{ width: 14, height: 23, position: 'absolute', left: 7, top: 5.5 }}
+    />
   );
 }
 
@@ -156,7 +160,7 @@ export function ConceptTopChrome({ category, onSelectCategory, goToFollowUps, la
           })}
         </div>
         <button
-          className="w-[34px] h-[34px] rounded-full bg-white shadow-[0_2px_10px_rgba(30,40,90,0.08)] flex items-center justify-center cursor-pointer flex-shrink-0"
+          className="relative w-[34px] h-[34px] rounded-full bg-white shadow-[0_2px_10px_rgba(30,40,90,0.08)] cursor-pointer flex-shrink-0"
           onClick={goToFollowUps}
           aria-label="More info"
         >
