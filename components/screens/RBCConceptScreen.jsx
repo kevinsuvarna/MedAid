@@ -2,13 +2,13 @@ import { useEffect, useState } from 'react';
 import { getParam } from '@/lib/reportAdapter';
 import { speak, stopSpeech } from '@/lib/speech';
 import { USE_MOCK } from '@/lib/config';
-import { ConceptTopChrome, GaugeBar, SpeakerIcon, dotColorForFlag } from '@/components/screens/WBCConceptScreen';
+import { GaugeBar, SpeakerIcon, dotColorForFlag } from '@/components/screens/WBCConceptScreen';
 
 function RbcAvatar() {
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src="/images/RBC_smiley.png"
+      src="/icons/rbc.svg"
       alt=""
       className="w-[46px] h-[46px] rounded-full flex-shrink-0 shadow-[0_3px_8px_rgba(239,83,80,0.3)]"
     />
@@ -119,17 +119,7 @@ const RBC_SUB_PARAMS = [
   },
 ];
 
-export default function RBCConceptScreen({
-  reportData,
-  t,
-  langCode,
-  audioMode,
-  onSelectCategory,
-  goToFollowUps,
-  languageLabel,
-  onBack,
-  onLanguageClick,
-}) {
+export default function RBCConceptScreen({ reportData, t, langCode, audioMode }) {
   const [expandedId, setExpandedId] = useState(null);
   const totalRbcParam = getParam(reportData, 'rbc', 'rbcCount');
 
@@ -151,29 +141,16 @@ export default function RBCConceptScreen({
 
   return (
     <div
-      className="flex flex-col flex-1 min-h-0 overflow-y-auto pb-[22px]"
-      style={{ animation: 'fadeIn 0.3s ease', background: '#D7E0F5' }}
+      className="rounded-[26px] p-[14px] mt-4 mx-[22px]"
+      style={{
+        background: 'rgba(255,255,255,0.45)',
+        backdropFilter: 'blur(18px)',
+        WebkitBackdropFilter: 'blur(18px)',
+        border: '1px solid rgba(255,255,255,0.7)',
+        boxShadow: '0 8px 30px rgba(30,40,90,0.1), inset 0 1px 0 rgba(255,255,255,0.8)',
+      }}
     >
-      <ConceptTopChrome
-        category="rbc"
-        onSelectCategory={onSelectCategory}
-        goToFollowUps={goToFollowUps}
-        languageLabel={languageLabel}
-        onBack={onBack}
-        onLanguageClick={onLanguageClick}
-      />
-
-      <div
-        className="rounded-[26px] p-[14px] mt-4 mx-[22px]"
-        style={{
-          background: 'rgba(255,255,255,0.45)',
-          backdropFilter: 'blur(18px)',
-          WebkitBackdropFilter: 'blur(18px)',
-          border: '1px solid rgba(255,255,255,0.7)',
-          boxShadow: '0 8px 30px rgba(30,40,90,0.1), inset 0 1px 0 rgba(255,255,255,0.8)',
-        }}
-      >
-        <div className="bg-white rounded-[20px] shadow-[0_4px_16px_rgba(0,0,0,0.08)] p-5">
+      <div className="bg-white rounded-[20px] shadow-[0_4px_16px_rgba(0,0,0,0.08)] p-5">
           <div className="flex items-center justify-between">
             <div className="text-[18px] font-bold text-[#1A237E]">Red Blood Cells (RBC)</div>
             <button
@@ -267,8 +244,7 @@ export default function RBCConceptScreen({
           </div>
         </div>
 
-        <div className="text-[12.5px] text-[#64748B] text-center mt-6">Tap each to know more</div>
-      </div>
+      <div className="text-[12.5px] text-[#64748B] text-center mt-6">Tap each to know more</div>
     </div>
   );
 }

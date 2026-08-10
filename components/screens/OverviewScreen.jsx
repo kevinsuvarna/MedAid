@@ -1,5 +1,6 @@
 import { getParam, CATEGORY_PARAM_IDS } from '@/lib/reportAdapter';
 import { speak } from '@/lib/speech';
+import BackArrowIcon from '@/components/icons/BackArrowIcon';
 
 const LANG_VOICE_CODE = {
   English: 'Eng',
@@ -25,9 +26,9 @@ const CATEGORY_INFO = {
 // neutral/flat moods still fall back to the hand-drawn FaceIcon below so the
 // smile curvature can keep varying with severity.
 const CATEGORY_SMILEY_IMG = {
-  rbc: '/images/RBC_smiley.png',
-  wbc: '/images/WBC_smiley.png',
-  plt: '/images/Platelet_smiley.png',
+  rbc: '/icons/rbc.svg',
+  wbc: '/icons/wbc.svg',
+  plt: '/icons/platelet.svg',
 };
 
 const STATUS_PILL_STYLE = {
@@ -185,14 +186,14 @@ export default function OverviewScreen({ categories, reportData, languageLabel, 
   }
 
   return (
-    <div className="flex flex-col flex-1 relative" style={{ animation: 'fadeIn 0.3s ease', background: '#D7E0F5' }}>
+    <div className="flex flex-col flex-1 relative" style={{ background: '#D7E0F5' }}>
       <div className="flex items-center justify-between px-5 pt-[26px]">
         <button
-          className="text-[20px] leading-none text-[#1A237E] bg-transparent border-none cursor-pointer"
+          className="flex items-center justify-center text-[#1A237E] bg-transparent border-none cursor-pointer"
           onClick={onBack}
           aria-label="Back"
         >
-          ←
+          <BackArrowIcon />
         </button>
         <div
           className="flex items-center gap-[6px] bg-white rounded-full px-3 py-[6px] cursor-pointer shadow-[0_4px_12px_rgba(26,35,126,0.12)]"
@@ -235,7 +236,7 @@ export default function OverviewScreen({ categories, reportData, languageLabel, 
         >
           {overallStyle.mood === 'happy' ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src="/images/Overall_smiley.png" alt="" className="w-[38px] h-[38px] rounded-full flex-shrink-0" />
+            <img src="/icons/overall.svg" alt="" className="w-[38px] h-[38px] rounded-full flex-shrink-0" />
           ) : (
             <div
               className="w-[38px] h-[38px] rounded-full flex items-center justify-center flex-shrink-0"

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { getParam } from '@/lib/reportAdapter';
 import { speak, stopSpeech } from '@/lib/speech';
 import { USE_MOCK } from '@/lib/config';
+import BackArrowIcon from '@/components/icons/BackArrowIcon';
 
 export const LANG_VOICE_CODE = {
   English: 'Eng',
@@ -83,18 +84,26 @@ export function dotColorForFlag(rawFlag) {
   return '#F44336';
 }
 
+// Index of each tab in TAB_DEFS — drives how far the sliding indicator
+// pill below has to travel (translateX by activeIndex * 100%).
+const TAB_INDEX = { rbc: 0, wbc: 1, plt: 2 };
+
 // Shared top chrome for all three concept screens: back arrow + Voice pill,
 // then the RBC/WBC/Platelets tab switcher + the info button (-> FollowUpsScreen).
+// Rendered once by ConceptScreen.jsx (not per-category) so the tab indicator
+// pill below is a persistent element whose position transition is actually
+// visible, instead of being torn down and rebuilt on every tab switch.
 export function ConceptTopChrome({ category, onSelectCategory, goToFollowUps, languageLabel, onBack, onLanguageClick }) {
+  const activeIndex = TAB_INDEX[category] ?? 0;
   return (
     <>
       <div className="flex items-center justify-between px-[22px] pt-[26px]">
         <button
-          className="text-[20px] leading-none text-[#1A237E] bg-transparent border-none cursor-pointer"
+          className="flex items-center justify-center text-[#1A237E] bg-transparent border-none cursor-pointer"
           onClick={onBack}
           aria-label="Back"
         >
-          ←
+          <BackArrowIcon />
         </button>
         <div
           className="flex items-center gap-[6px] bg-white rounded-full px-3 py-[6px] cursor-pointer shadow-[0_4px_12px_rgba(26,35,126,0.12)]"
@@ -105,23 +114,26 @@ export function ConceptTopChrome({ category, onSelectCategory, goToFollowUps, la
       </div>
 
       <div className="flex items-center gap-3 px-[22px] mt-4">
-        <div className="flex-1 flex bg-white rounded-full p-1 shadow-[0_4px_12px_rgba(26,35,126,0.08)]">
+        <div className="relative flex-1 flex bg-white rounded-full p-1 shadow-[0_4px_12px_rgba(26,35,126,0.08)]">
+          <div
+            className="absolute top-1 bottom-1 left-1 rounded-full"
+            style={{
+              width: `calc((100% - 8px) / ${TAB_DEFS.length})`,
+              transform: `translateX(${activeIndex * 100}%)`,
+              transition: 'all 200ms ease',
+              background: 'linear-gradient(135deg, #7B85D9 0%, #5A62C6 100%)',
+              boxShadow: '0 3px 8px rgba(90,80,220,0.3)',
+            }}
+          />
           {TAB_DEFS.map((tab) => {
             const active = category === tab.id;
             return (
               <button
                 key={tab.id}
-                className={`flex-1 text-[13px] font-bold rounded-full py-[8px] cursor-pointer border-none ${
-                  active ? 'text-white' : 'bg-transparent text-[#9CA3AF]'
+                className={`relative z-[1] flex-1 text-[13px] font-bold rounded-full py-[8px] cursor-pointer border-none bg-transparent ${
+                  active ? 'text-white' : 'text-[#9CA3AF]'
                 }`}
-                style={
-                  active
-                    ? {
-                        background: 'linear-gradient(135deg, #7B85D9 0%, #5A62C6 100%)',
-                        boxShadow: '0 3px 8px rgba(90,80,220,0.3)',
-                      }
-                    : undefined
-                }
+                style={{ transition: 'color 200ms ease' }}
                 onClick={() => {
                   if (!active) onSelectCategory(tab.id);
                 }}
@@ -147,7 +159,7 @@ function WbcAvatar() {
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src="/images/WBC_smiley.png"
+      src="/icons/wbc.svg"
       alt=""
       className="w-[46px] h-[46px] rounded-full flex-shrink-0 shadow-[0_3px_8px_rgba(90,80,220,0.3)]"
     />
@@ -244,17 +256,7 @@ const WBC_SUB_PARAMS = [
   },
 ];
 
-export default function WBCConceptScreen({
-  reportData,
-  t,
-  langCode,
-  audioMode,
-  onSelectCategory,
-  goToFollowUps,
-  languageLabel,
-  onBack,
-  onLanguageClick,
-}) {
+export default function WBCConceptScreen({ reportData, t, langCode, audioMode }) {
   const [expandedId, setExpandedId] = useState(null);
   const totalWbcParam = getParam(reportData, 'wbc', 'totalWbc');
 
@@ -276,29 +278,16 @@ export default function WBCConceptScreen({
 
   return (
     <div
-      className="flex flex-col flex-1 min-h-0 overflow-y-auto pb-[22px]"
-      style={{ animation: 'fadeIn 0.3s ease', background: '#D7E0F5' }}
+      className="rounded-[26px] p-[14px] mt-4 mx-[22px]"
+      style={{
+        background: 'rgba(255,255,255,0.45)',
+        backdropFilter: 'blur(18px)',
+        WebkitBackdropFilter: 'blur(18px)',
+        border: '1px solid rgba(255,255,255,0.7)',
+        boxShadow: '0 8px 30px rgba(30,40,90,0.1), inset 0 1px 0 rgba(255,255,255,0.8)',
+      }}
     >
-      <ConceptTopChrome
-        category="wbc"
-        onSelectCategory={onSelectCategory}
-        goToFollowUps={goToFollowUps}
-        languageLabel={languageLabel}
-        onBack={onBack}
-        onLanguageClick={onLanguageClick}
-      />
-
-      <div
-        className="rounded-[26px] p-[14px] mt-4 mx-[22px]"
-        style={{
-          background: 'rgba(255,255,255,0.45)',
-          backdropFilter: 'blur(18px)',
-          WebkitBackdropFilter: 'blur(18px)',
-          border: '1px solid rgba(255,255,255,0.7)',
-          boxShadow: '0 8px 30px rgba(30,40,90,0.1), inset 0 1px 0 rgba(255,255,255,0.8)',
-        }}
-      >
-        <div className="bg-white rounded-[20px] shadow-[0_4px_16px_rgba(0,0,0,0.08)] p-5">
+      <div className="bg-white rounded-[20px] shadow-[0_4px_16px_rgba(0,0,0,0.08)] p-5">
           <div className="flex items-center justify-between">
             <div className="text-[18px] font-bold text-[#1A237E]">White Blood Cells (WBC)</div>
             <button
@@ -392,8 +381,7 @@ export default function WBCConceptScreen({
           </div>
         </div>
 
-        <div className="text-[12.5px] text-[#64748B] text-center mt-6">Tap each to know more</div>
-      </div>
+      <div className="text-[12.5px] text-[#64748B] text-center mt-6">Tap each to know more</div>
     </div>
   );
 }

@@ -50,6 +50,14 @@ a:hover {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
+@keyframes conceptSlideInFromRight {
+  from { opacity: 0; transform: translateX(28px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes conceptSlideInFromLeft {
+  from { opacity: 0; transform: translateX(-28px); }
+  to { opacity: 1; transform: translateX(0); }
+}
 @keyframes ringPulse {
   0%, 100% { opacity: 0.6; transform: scale(1); }
   50% { opacity: 0; transform: scale(1.35); }

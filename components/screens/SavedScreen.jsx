@@ -2,10 +2,7 @@ import CheckmarkIcon from '@/components/icons/CheckmarkIcon';
 
 export default function SavedScreen({ t, exploreAnotherPart, savedCategoryCards }) {
   return (
-    <div
-      className="flex flex-col flex-1 pt-5 px-[22px] pb-[22px] items-center justify-center text-center"
-      style={{ animation: 'fadeIn 0.3s ease' }}
-    >
+    <div className="flex flex-col flex-1 pt-5 px-[22px] pb-[22px] items-center justify-center text-center">
       <div
         className="w-24 h-24 rounded-full bg-[#E9F7EF] flex items-center justify-center"
         style={{ animation: 'savedPop 0.45s cubic-bezier(0.34,1.56,0.64,1)' }}

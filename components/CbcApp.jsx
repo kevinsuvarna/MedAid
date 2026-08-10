@@ -10,6 +10,7 @@ import { USE_MOCK, MOCK_DATA } from '@/lib/config';
 import { getCachedReport, cacheReport } from '@/src/utils/reportCache';
 import { speak, stopSpeech, startVoiceInput as startVoiceInputHelper } from '@/lib/speech';
 import PhoneFrame from '@/components/PhoneFrame';
+import ScreenTransition from '@/components/ScreenTransition';
 import TopNavBar from '@/components/TopNavBar';
 import LangScreen from '@/components/screens/LangScreen';
 import OpeningScreen from '@/components/screens/OpeningScreen';
@@ -65,7 +66,7 @@ function flagBgFor(flag) {
 
 export default function CbcApp() {
   const searchParams = useSearchParams();
-  const [screen, setScreen] = useState('lang');
+  const [screen, setScreen] = useState('opening');
   const [langId, setLangId] = useState('en');
   const [audioMode, setAudioMode] = useState(false);
   const [category, setCategory] = useState(null);
@@ -329,11 +330,11 @@ export default function CbcApp() {
   function selectLanguage(id) {
     pushHistory();
     setLangId(id);
-    setScreen('opening');
+    setScreen('overview');
   }
   function exploreReport() {
     pushHistory();
-    setScreen('overview');
+    setScreen('lang');
   }
   function listenToReport() {
     pushHistory();
@@ -352,6 +353,10 @@ export default function CbcApp() {
     popHistory();
     setScreen('overview');
     setCategory(null);
+  }
+  function backToLang() {
+    popHistory();
+    setScreen('lang');
   }
   function goToResult() {
     pushHistory();
@@ -609,11 +614,11 @@ export default function CbcApp() {
         ) : null
       }
     >
-      {screen === 'lang' && <LangScreen languages={languages} />}
+      <ScreenTransition screenKey={screen}>
+      {screen === 'lang' && <LangScreen languages={languages} onBack={goBack} />}
 
       {screen === 'opening' && (
         <OpeningScreen
-          languageLabel={lang.label}
           t={t}
           patientReportLabel={patientReportLabel}
           reportMeta={reportMetaLine}
@@ -623,8 +628,6 @@ export default function CbcApp() {
           audioMode={audioMode}
           enableAudioMode={enableAudioMode}
           langCode={lang.code}
-          onBack={goBack}
-          onLanguageClick={goToLangScreen}
         />
       )}
 
@@ -634,7 +637,7 @@ export default function CbcApp() {
           reportData={reportData}
           languageLabel={lang.label}
           langCode={lang.code}
-          onBack={goBack}
+          onBack={backToLang}
           onLanguageClick={goToLangScreen}
         />
       )}
@@ -757,6 +760,7 @@ export default function CbcApp() {
       {screen === 'saved' && (
         <SavedScreen t={t} exploreAnotherPart={exploreAnotherPart} savedCategoryCards={savedCategoryCards} />
       )}
+      </ScreenTransition>
     </PhoneFrame>
   );
 }

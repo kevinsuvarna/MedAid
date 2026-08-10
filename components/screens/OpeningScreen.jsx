@@ -8,20 +8,6 @@ const SUMMARY_CELLS = [
   { id: 'plt', label1: 'Clotting:' },
 ];
 
-const LANG_VOICE_CODE = {
-  English: 'Eng',
-  हिन्दी: 'Hin',
-  తెలుగు: 'Tel',
-  ಕನ್ನಡ: 'Kan',
-  മലയാളം: 'Mal',
-  தமிழ்: 'Tam',
-};
-
-function voiceCodeFor(languageLabel) {
-  if (!languageLabel) return '';
-  return LANG_VOICE_CODE[languageLabel] || languageLabel.slice(0, 3);
-}
-
 function statusLabelFor(tier) {
   if (tier === 'green') return 'All Good';
   if (tier === 'amber') return 'Needs Care';
@@ -37,17 +23,7 @@ function CheckCircleIcon() {
   );
 }
 
-export default function OpeningScreen({
-  t,
-  reportData,
-  exploreReport,
-  audioMode,
-  enableAudioMode,
-  langCode,
-  languageLabel,
-  onBack,
-  onLanguageClick,
-}) {
+export default function OpeningScreen({ t, reportData, exploreReport, audioMode, enableAudioMode, langCode }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const isFirstRender = useRef(true);
 
@@ -86,7 +62,7 @@ export default function OpeningScreen({
   return (
     <div
       className="flex flex-col flex-1 relative"
-      style={{ animation: 'fadeIn 0.3s ease', background: '#D7E0F5' }}
+      style={{ background: '#D7E0F5' }}
     >
       <style>{`
         @media print {
@@ -95,22 +71,6 @@ export default function OpeningScreen({
           #opening-summary-card { position: absolute; left: 0; top: 0; width: 100%; }
         }
       `}</style>
-
-      <div className="flex items-center justify-between px-5 pt-[26px]">
-        <button
-          className="text-[20px] leading-none text-[#1A237E] bg-transparent border-none cursor-pointer"
-          onClick={onBack}
-          aria-label="Back"
-        >
-          ←
-        </button>
-        <div
-          className="flex items-center gap-[6px] bg-white rounded-full px-3 py-[6px] cursor-pointer shadow-[0_4px_12px_rgba(26,35,126,0.12)]"
-          onClick={onLanguageClick}
-        >
-          <span className="text-[12px] font-bold text-[#1A237E]">Voice: {voiceCodeFor(languageLabel)}</span>
-        </div>
-      </div>
 
       <div className="relative flex flex-col items-center pt-4 pb-2">
         <div className="relative w-[140px] h-[140px]">

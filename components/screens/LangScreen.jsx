@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import BackArrowIcon from '@/components/icons/BackArrowIcon';
 
 const LANG_ORDER = ['English', 'हिन्दी', 'తెలుగు', 'ಕನ್ನಡ'];
 
@@ -14,7 +15,7 @@ function GlobeIcon() {
   );
 }
 
-export default function LangScreen({ languages }) {
+export default function LangScreen({ languages, onBack }) {
   const [expanded, setExpanded] = useState(false);
   const [tappedLabel, setTappedLabel] = useState(null);
 
@@ -66,8 +67,18 @@ export default function LangScreen({ languages }) {
   return (
     <div
       className="flex flex-col flex-1"
-      style={{ animation: 'fadeIn 0.3s ease', background: '#D7E0F5' }}
+      style={{ background: '#D7E0F5' }}
     >
+      <div className="flex items-center px-5 pt-[26px]">
+        <button
+          className="flex items-center justify-center text-[#1A237E] bg-transparent border-none cursor-pointer"
+          onClick={onBack}
+          aria-label="Back"
+        >
+          <BackArrowIcon />
+        </button>
+      </div>
+
       <div className="flex flex-col items-center pt-[36px] pb-[16px]">
         <GlobeIcon />
       </div>

@@ -7,7 +7,7 @@ export default function AskScreen({
   askVoiceUnavailable,
 }) {
   return (
-    <div className="flex flex-col flex-1 pt-4 px-[22px] pb-[22px]" style={{ animation: 'fadeIn 0.3s ease' }}>
+    <div className="flex flex-col flex-1 pt-4 px-[22px] pb-[22px]">
       <div className="text-[19px] font-extrabold text-[#1A1A2E]">{t.askTitle}</div>
       <div className="text-[14px] text-[#9CA3AF] mt-[6px] font-medium">{t.askSubtitle}</div>
 

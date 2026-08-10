@@ -1,5 +1,6 @@
 import { voiceCodeFor, SpeakerIcon } from '@/components/screens/WBCConceptScreen';
 import { speak } from '@/lib/speech';
+import BackArrowIcon from '@/components/icons/BackArrowIcon';
 
 export default function FollowUpsScreen({
   t,
@@ -18,15 +19,15 @@ export default function FollowUpsScreen({
   return (
     <div
       className="flex flex-col flex-1 min-h-0 overflow-y-auto pb-[22px]"
-      style={{ animation: 'fadeIn 0.3s ease', background: 'linear-gradient(160deg, #E4E9FA 0%, #F1EEFB 45%, #FDF6F0 100%)' }}
+      style={{ background: 'linear-gradient(160deg, #E4E9FA 0%, #F1EEFB 45%, #FDF6F0 100%)' }}
     >
       <div className="flex items-center justify-between px-[22px] pt-[26px]">
         <button
-          className="text-[20px] leading-none text-[#1A237E] bg-transparent border-none cursor-pointer"
+          className="flex items-center justify-center text-[#1A237E] bg-transparent border-none cursor-pointer"
           onClick={onBack}
           aria-label="Back"
         >
-          ←
+          <BackArrowIcon />
         </button>
         <div
           className="flex items-center gap-[6px] bg-white rounded-full px-3 py-[6px] cursor-pointer shadow-[0_4px_12px_rgba(26,35,126,0.12)]"

@@ -180,7 +180,7 @@ export default function ResultScreen({
   const facts = RESULT_FACTS[category] || [];
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 overflow-y-auto pt-4 px-[22px] pb-[22px]" style={{ animation: 'fadeIn 0.3s ease' }}>
+    <div className="flex flex-col flex-1 min-h-0 overflow-y-auto pt-4 px-[22px] pb-[22px]">
       <div className="text-[19px] font-extrabold" style={{ color: flagColor }}>{resultHeading}</div>
       <div className="text-[14.5px] text-[#6B7280] mt-[6px] leading-[1.55] font-medium">{paramDesc}</div>
 
