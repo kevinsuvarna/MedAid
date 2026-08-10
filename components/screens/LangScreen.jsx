@@ -95,7 +95,7 @@ export default function LangScreen({ languages }) {
 
         <div className="flex-1" />
         <div className="text-[12px] text-[#4A5FA0] text-center pb-[22px] pt-[16px]">
-          Audio explanation of your report
+          Tap speaker for Audio Explanation
         </div>
       </div>
     </div>

@@ -8,6 +8,20 @@ const SUMMARY_CELLS = [
   { id: 'plt', label1: 'Clotting:' },
 ];
 
+const LANG_VOICE_CODE = {
+  English: 'Eng',
+  हिन्दी: 'Hin',
+  తెలుగు: 'Tel',
+  ಕನ್ನಡ: 'Kan',
+  മലയാളം: 'Mal',
+  தமிழ்: 'Tam',
+};
+
+function voiceCodeFor(languageLabel) {
+  if (!languageLabel) return '';
+  return LANG_VOICE_CODE[languageLabel] || languageLabel.slice(0, 3);
+}
+
 function statusLabelFor(tier) {
   if (tier === 'green') return 'All Good';
   if (tier === 'amber') return 'Needs Care';
@@ -65,10 +79,6 @@ export default function OpeningScreen({
     }
   }
 
-  function handleDownload() {
-    window.print();
-  }
-
   const reportSubtitle = 'Complete Blood Count';
   const patientDate = reportData && reportData.patient ? reportData.patient.date : null;
   const reportDateTime = [patientDate, '09:30 AM'].filter(Boolean).join(' • ');
@@ -98,8 +108,7 @@ export default function OpeningScreen({
           className="flex items-center gap-[6px] bg-white rounded-full px-3 py-[6px] cursor-pointer shadow-[0_4px_12px_rgba(26,35,126,0.12)]"
           onClick={onLanguageClick}
         >
-          <span className="text-[13px] text-[#1A237E]">🔊</span>
-          <span className="text-[12px] font-bold text-[#1A237E]">{languageLabel}</span>
+          <span className="text-[12px] font-bold text-[#1A237E]">Voice: {voiceCodeFor(languageLabel)}</span>
         </div>
       </div>
 
@@ -141,7 +150,7 @@ export default function OpeningScreen({
 
       <div
         id="opening-summary-card"
-        className="relative flex flex-col flex-1 mx-auto mb-[14px] w-[90%] bg-white rounded-[24px] shadow-[0_8px_24px_rgba(26,35,126,0.14)] px-5 pt-6 pb-5 overflow-y-auto"
+        className="relative flex flex-col flex-1 mx-auto mb-[14px] w-[90%] bg-white/85 rounded-[24px] shadow-[0_8px_24px_rgba(26,35,126,0.14)] px-5 pt-6 pb-5 overflow-y-auto"
       >
         <div className="flex justify-center">
           <div className="inline-flex items-center gap-[6px] bg-[#E8F5E9] text-[#2E7D32] text-[12px] font-bold rounded-full px-3 py-[6px]">
@@ -174,14 +183,14 @@ export default function OpeningScreen({
           </div>
         </div>
 
-        <div className="flex-1 min-h-4" />
-
         <button
-          className="w-full bg-[#1A237E] text-white border-none rounded-[30px] h-[54px] text-[15px] font-bold uppercase tracking-[0.04em] cursor-pointer mt-6"
+          className="w-full bg-[#1A237E] text-white border-none rounded-[30px] h-[54px] text-[15px] font-bold uppercase tracking-[0.04em] cursor-pointer mt-8"
           onClick={exploreReport}
         >
           Check Report →
         </button>
+
+        <div className="flex-1 min-h-4" />
 
         {audioMode ? (
           <div className="mt-4">
@@ -209,21 +218,7 @@ export default function OpeningScreen({
             </div>
             <div className="text-[12px] text-[#5C6BC0] text-center mt-2">Listening to My Report (Narrated)</div>
           </div>
-        ) : (
-          <button
-            className="w-full bg-white text-[#1A237E] border-[1.5px] border-[#C7D3F0] rounded-[27px] h-[48px] text-[14px] font-bold cursor-pointer mt-4"
-            onClick={enableAudioMode}
-          >
-            🔊 {t.listenCta}
-          </button>
-        )}
-
-        <button
-          className="bg-transparent text-[#7C86B8] text-[13px] font-semibold text-center cursor-pointer border-none mt-3"
-          onClick={handleDownload}
-        >
-          ⬇ Download as PDF
-        </button>
+        ) : null}
 
         <div className="text-[12px] text-[#9CA3AF] text-center mt-4">No personal data is stored on this tag.</div>
       </div>
