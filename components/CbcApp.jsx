@@ -1,11 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { LANG_META, T } from '@/lib/translations';
 import { CAT_DEFS, SCREEN_STEP, FACTS, CATEGORY_TAGLINES } from '@/lib/data';
 import { getParam, getWbcDifferentialRows } from '@/lib/reportAdapter';
-import { extractReportData, clearReportCache } from '@/lib/pdfExtractor';
+import { extractReportData, clearReportCache, PARSER_VERSION } from '@/lib/pdfExtractor';
 import { USE_MOCK, MOCK_DATA } from '@/lib/config';
+import { getCachedReport, cacheReport } from '@/src/utils/reportCache';
 import { speak, stopSpeech, startVoiceInput as startVoiceInputHelper } from '@/lib/speech';
 import PhoneFrame from '@/components/PhoneFrame';
 import TopNavBar from '@/components/TopNavBar';
@@ -24,7 +26,6 @@ import DoctorQuestionsScreen from '@/components/screens/DoctorQuestionsScreen';
 import WhyMeasuredScreen from '@/components/screens/WhyMeasuredScreen';
 import SavedScreen from '@/components/screens/SavedScreen';
 import LoadingScreen from '@/components/screens/LoadingScreen';
-import ReportErrorScreen from '@/components/screens/ReportErrorScreen';
 
 const WBC_NORMAL_GREENS = ['#2ECC71', '#27AE60', '#1E8449'];
 const WBC_HIGH_COLOR = '#E74C3C';
@@ -63,6 +64,7 @@ function flagBgFor(flag) {
 }
 
 export default function CbcApp() {
+  const searchParams = useSearchParams();
   const [screen, setScreen] = useState('lang');
   const [langId, setLangId] = useState('en');
   const [audioMode, setAudioMode] = useState(false);
@@ -77,19 +79,70 @@ export default function CbcApp() {
   const [selectedParam, setSelectedParam] = useState(null);
   const [reportData, setReportData] = useState(null);
   const [loadState, setLoadState] = useState('loading');
+  const [loadMessage, setLoadMessage] = useState('Reading your report…');
+  const [errorMessage, setErrorMessage] = useState('');
 
   async function loadReport({ forceRefresh = false } = {}) {
-    setLoadState('loading');
-    if (USE_MOCK) {
+    const reportId = searchParams.get('report_id');
+
+    // report_id always takes priority over USE_MOCK — a report link should
+    // show that report's real values regardless of the mock flag. USE_MOCK
+    // only governs the no-report_id fallback below.
+    if (!reportId && USE_MOCK) {
+      setLoadState('loading');
       setReportData(MOCK_DATA);
       setLoadState('ready');
       return;
     }
-    const data = await extractReportData({ forceRefresh });
+
+    if (!reportId) {
+      // STEP 3 — no report_id: existing static/manually-placed report.pdf flow.
+      setLoadState('loading');
+      setLoadMessage('Reading your report…');
+      const data = await extractReportData({ forceRefresh });
+      if (data) {
+        setReportData(data);
+        setLoadState('ready');
+      } else {
+        setErrorMessage('Could not read report. Please check the file and try again.');
+        setLoadState('error');
+      }
+      return;
+    }
+
+    // STEP 2 — report_id present: try the cache first, skipping all network calls on a hit.
+    // A version mismatch means the cached data was parsed by older, since-
+    // fixed logic — treat that the same as a cache miss.
+    if (!forceRefresh) {
+      const cached = await getCachedReport(reportId);
+      if (cached && cached.__parserVersion === PARSER_VERSION) {
+        setReportData(cached.data);
+        setLoadState('ready');
+        return;
+      }
+    }
+
+    setLoadState('loading');
+    setLoadMessage('Opening your report…');
+    let pdfArrayBuffer;
+    try {
+      const res = await fetch(`/api/report?id=${encodeURIComponent(reportId)}`);
+      if (!res.ok) throw new Error(`Fetch failed with status ${res.status}`);
+      pdfArrayBuffer = await res.arrayBuffer();
+    } catch (e) {
+      setErrorMessage('Could not find this report. Check your link and try again.');
+      setLoadState('error');
+      return;
+    }
+
+    setLoadMessage('Reading values…');
+    const data = await extractReportData({ arrayBuffer: pdfArrayBuffer });
     if (data) {
+      await cacheReport(reportId, { __parserVersion: PARSER_VERSION, data });
       setReportData(data);
       setLoadState('ready');
     } else {
+      setErrorMessage('Could not read report values. Please try again.');
       setLoadState('error');
     }
   }
@@ -511,14 +564,25 @@ export default function CbcApp() {
   if (loadState === 'loading') {
     return (
       <PhoneFrame showProgress={false}>
-        <LoadingScreen />
+        <LoadingScreen text={loadMessage} />
       </PhoneFrame>
     );
   }
   if (loadState === 'error') {
     return (
       <PhoneFrame showProgress={false}>
-        <ReportErrorScreen onRetry={retryLoadReport} />
+        <div className="flex flex-1 flex-col items-center justify-center gap-4 px-[22px] text-center">
+          <div className="w-[64px] h-[64px] rounded-full bg-[#FDEDEB] flex items-center justify-center text-[28px]">
+            ⚠
+          </div>
+          <div className="text-[16px] font-bold text-[#1A1A2E]">{errorMessage}</div>
+          <button
+            className="bg-[#E8735A] text-white border-none rounded-[26px] px-6 py-3 text-[15px] font-bold cursor-pointer min-h-[48px] shadow-[0_6px_18px_rgba(232,115,90,0.32)] mt-2"
+            onClick={retryLoadReport}
+          >
+            Retry
+          </button>
+        </div>
       </PhoneFrame>
     );
   }

@@ -20,6 +20,9 @@ yarn-error.log*
 # local env files
 .env*.local
 
+# PDFs mirrored locally by app/api/report for debugging (see route.js)
+/reports/downloaded/
+
 # vercel
 .vercel
 
