@@ -518,10 +518,10 @@ export default function CbcApp() {
 
   return (
     <PhoneFrame
-      showProgress={screen !== 'lang' && screen !== 'opening'}
+      showProgress={screen !== 'lang' && screen !== 'opening' && screen !== 'overview'}
       progressSteps={progressSteps}
       topBar={
-        screen !== 'lang' && screen !== 'opening' ? (
+        screen !== 'lang' && screen !== 'opening' && screen !== 'overview' ? (
           <TopNavBar onBack={goBack} languageLabel={`Voice: ${lang.short}`} onLanguageClick={goToLangScreen} />
         ) : null
       }
@@ -545,7 +545,16 @@ export default function CbcApp() {
         />
       )}
 
-      {screen === 'overview' && <OverviewScreen t={t} categories={categories} reportData={reportData} />}
+      {screen === 'overview' && (
+        <OverviewScreen
+          categories={categories}
+          reportData={reportData}
+          languageLabel={lang.label}
+          langCode={lang.code}
+          onBack={goBack}
+          onLanguageClick={goToLangScreen}
+        />
+      )}
 
       {screen === 'concept' && (
         <ConceptScreen
