@@ -22,9 +22,6 @@ const CATEGORY_INFO = {
   plt: { name: 'Platelets', desc: 'Stops bleeding & heals wounds', ringColor: '#FFB300' },
 };
 
-// Happy/good mood already has a curved smile baked into these images; the
-// neutral/flat moods still fall back to the hand-drawn FaceIcon below so the
-// smile curvature can keep varying with severity.
 const CATEGORY_SMILEY_IMG = {
   rbc: '/icons/rbc.svg',
   wbc: '/icons/wbc.svg',
@@ -37,12 +34,6 @@ const STATUS_PILL_STYLE = {
   border: { label: 'BORDER', bg: '#FEF3C7', text: '#F57F17', labelText: '#796928' },
   good: { label: 'GOOD', bg: '#DCFCE7', text: '#2E7D32', labelText: '#166534' },
 };
-
-function moodFor(status) {
-  if (status === 'good') return 'happy';
-  if (status === 'border') return 'neutral';
-  return 'flat';
-}
 
 const OVERALL_STYLE = {
   green: { bg: '#B4EBD3', text: '#2E7D32', smiley: '#A5D6A7', mood: 'happy' },
@@ -110,42 +101,10 @@ function ChevronIcon() {
   );
 }
 
-function CategoryIcon({ id, status }) {
-  const mood = moodFor(status);
-  if (mood === 'happy') {
-    return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img src={CATEGORY_SMILEY_IMG[id]} alt="" className="w-[42px] h-[42px] rounded-full flex-shrink-0" />
-    );
-  }
-  const info = CATEGORY_INFO[id];
-  const badge =
-    id === 'rbc' ? (
-      <span className="text-[7px] font-extrabold" style={{ color: info.ringColor }}>
-        O₂
-      </span>
-    ) : id === 'wbc' ? (
-      <svg width="9" height="11" viewBox="0 0 10 12">
-        <path d="M5 0L9 1.5V5.5C9 8.5 7 10.5 5 12C3 10.5 1 8.5 1 5.5V1.5L5 0Z" fill="#5C6BC0" />
-      </svg>
-    ) : (
-      <svg width="9" height="9" viewBox="0 0 10 10">
-        <line x1="5" y1="0" x2="5" y2="10" stroke="#FFB300" strokeWidth="2" strokeLinecap="round" />
-        <line x1="0" y1="5" x2="10" y2="5" stroke="#FFB300" strokeWidth="2" strokeLinecap="round" />
-      </svg>
-    );
+function CategoryIcon({ id }) {
   return (
-    <div className="relative w-[42px] h-[42px] flex-shrink-0">
-      <div
-        className="w-[42px] h-[42px] rounded-full flex items-center justify-center"
-        style={{ background: info.ringColor }}
-      >
-        <FaceIcon mood={mood} size={22} />
-      </div>
-      <div className="absolute -top-[2px] -right-[2px] w-[16px] h-[16px] rounded-full bg-white flex items-center justify-center shadow-[0_2px_6px_rgba(0,0,0,0.15)]">
-        {badge}
-      </div>
-    </div>
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={CATEGORY_SMILEY_IMG[id]} alt="" className="w-[42px] h-[42px] rounded-full flex-shrink-0" />
   );
 }
 
@@ -265,7 +224,7 @@ export default function OverviewScreen({ categories, reportData, languageLabel, 
                 }}
                 onClick={cat.select}
               >
-                <CategoryIcon id={cat.id} status={cat.status} />
+                <CategoryIcon id={cat.id} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-[13px] font-bold text-[#1E1B4B] whitespace-nowrap">{info.name}</span>

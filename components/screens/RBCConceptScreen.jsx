@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { getParam } from '@/lib/reportAdapter';
 import { speak, stopSpeech } from '@/lib/speech';
 import { USE_MOCK } from '@/lib/config';
-import { GaugeBar, SpeakerIcon, dotColorForFlag } from '@/components/screens/WBCConceptScreen';
+import { GaugeBar, SpeakerIcon } from '@/components/screens/WBCConceptScreen';
 
 function RbcAvatar() {
   return (
@@ -13,6 +13,35 @@ function RbcAvatar() {
       className="w-[46px] h-[46px] rounded-full flex-shrink-0 shadow-[0_3px_8px_rgba(239,83,80,0.3)]"
     />
   );
+}
+
+// Down chevron that rotates to point up when the row is expanded — a real
+// stroked icon (1.5pt) rather than a text glyph, per the accordion redesign.
+function CaretIcon({ open }) {
+  return (
+    <svg
+      width={14}
+      height={14}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="#9CA3AF"
+      strokeWidth={1.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 200ms ease' }}
+    >
+      <path d="M6 9l6 6 6-6" />
+    </svg>
+  );
+}
+
+// Joins the fact + food tip into a single sentence ("Low count can cause
+// tiredness: Eat iron-rich food like palak and dal.") — strips the fact's
+// own trailing period so it doesn't collide with the joining colon. Falls
+// back to the fact alone when a sub-param has no food tip (e.g. MCHC).
+function bottomLineFor(sub) {
+  if (!sub.food) return sub.fact;
+  return `${sub.fact.replace(/\.\s*$/, '')}: ${sub.food}`;
 }
 
 const TOTAL_RBC_GAUGE = {
@@ -198,32 +227,27 @@ export default function RBCConceptScreen({ reportData, t, langCode, audioMode })
               const param = getParam(reportData, 'rbc', sub.id);
               if (!param) return null;
               const isOpen = expandedId === sub.id;
+              const isAbnormal = param.rawFlag !== 'normal';
               return (
                 <div
                   key={sub.id}
                   className="bg-white rounded-[16px] shadow-[0_3px_10px_rgba(30,40,90,0.06)] p-4 cursor-pointer"
+                  style={{ border: `1.5px solid ${isAbnormal ? '#90CAF9' : '#E2E8F0'}` }}
                   onClick={() => toggleRow(sub.id)}
                 >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-[15px] font-bold text-[#1A237E]">{sub.name}</div>
-                      <div className="text-[11px] text-[#64748B] mt-[2px]">{sub.description}</div>
-                    </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="text-[15px] font-bold text-[#1A237E]">{sub.name}</div>
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      <span className="text-[14px] text-[#6B7280]">
-                        {param.value} <span className="text-[11px]">{param.unit}</span>
+                      <span className="text-[18px] font-bold text-[#1A237E]">
+                        {param.value}
+                        <span className="text-[13px] font-normal text-[#9E9E9E] ml-1">{param.unit}</span>
                       </span>
-                      {!isOpen && (
-                        <span
-                          className="w-[10px] h-[10px] rounded-full flex-shrink-0"
-                          style={{ background: dotColorForFlag(param.rawFlag) }}
-                        />
-                      )}
-                      <span className="text-[16px] text-[#9CA3AF] flex-shrink-0">{isOpen ? '⌄' : '›'}</span>
+                      <CaretIcon open={isOpen} />
                     </div>
                   </div>
                   {isOpen && (
-                    <div className="mt-3">
+                    <>
+                      <div className="text-[13px] text-[#9E9E9E] mt-1">{sub.description}</div>
                       <GaugeBar
                         min={sub.min}
                         max={sub.max}
@@ -234,9 +258,8 @@ export default function RBCConceptScreen({ reportData, t, langCode, audioMode })
                         healthyLabel={sub.healthyLabel}
                         highLabel={sub.highLabel}
                       />
-                      <div className="text-[11px] text-[#1A1A2E] mt-2 truncate">{sub.fact}</div>
-                      {sub.food && <div className="text-[11px] text-[#6B7280] mt-1 truncate">{sub.food}</div>}
-                    </div>
+                      <div className="text-[13px] text-[#9E9E9E] mt-2 line-clamp-2">{bottomLineFor(sub)}</div>
+                    </>
                   )}
                 </div>
               );
