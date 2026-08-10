@@ -28,21 +28,37 @@ export function gaugePct(value, min, max) {
   return Math.max(0, Math.min(100, ((value - min) / (max - min)) * 100));
 }
 
-export function GaugeBar({ min, max, healthyLow, healthyHigh, value, lowLabel, healthyLabel, highLabel }) {
+export function GaugeBar({
+  min,
+  max,
+  healthyLow,
+  healthyHigh,
+  value,
+  lowLabel,
+  healthyLabel,
+  highLabel,
+  trackHeight = 6,
+  trackWidth = '100%',
+  marginTop = 16,
+  labelFontSize = 10,
+  labelFontWeight = 700,
+  valueFontWeight = 700,
+}) {
   const healthyStart = gaugePct(healthyLow, min, max);
   const healthyEnd = gaugePct(healthyHigh, min, max);
   const dotPct = gaugePct(value, min, max);
   return (
-    <div className="mt-4">
+    <div style={{ marginTop: `${marginTop}px`, width: trackWidth, marginLeft: 'auto', marginRight: 'auto' }}>
       <div
-        className="relative h-[6px] rounded-full"
+        className="relative rounded-full"
         style={{
+          height: `${trackHeight}px`,
           background: `linear-gradient(90deg, #F44336 0%, #FFC107 ${healthyStart}%, #4CAF50 ${(healthyStart + healthyEnd) / 2}%, #FFC107 ${healthyEnd}%, #F5A623 100%)`,
         }}
       >
         <div
-          className="absolute -top-[20px] -translate-x-1/2 text-[10px] font-bold text-[#1A237E] whitespace-nowrap"
-          style={{ left: `${dotPct}%` }}
+          className="absolute -top-[20px] -translate-x-1/2 text-[10px] text-[#1A237E] whitespace-nowrap"
+          style={{ left: `${dotPct}%`, fontWeight: valueFontWeight }}
         >
           {value}
         </div>
@@ -52,9 +68,9 @@ export function GaugeBar({ min, max, healthyLow, healthyHigh, value, lowLabel, h
         />
       </div>
       <div className="flex items-center justify-between mt-2">
-        <span className="text-[10px] font-bold text-[#F44336]">{lowLabel}</span>
-        <span className="text-[10px] font-bold text-[#4CAF50]">{healthyLabel}</span>
-        <span className="text-[10px] font-bold text-[#F5A623]">{highLabel}</span>
+        <span className="text-[#F44336]" style={{ fontSize: `${labelFontSize}px`, fontWeight: labelFontWeight }}>{lowLabel}</span>
+        <span className="text-[#4CAF50]" style={{ fontSize: `${labelFontSize}px`, fontWeight: labelFontWeight }}>{healthyLabel}</span>
+        <span className="text-[#F5A623]" style={{ fontSize: `${labelFontSize}px`, fontWeight: labelFontWeight }}>{highLabel}</span>
       </div>
     </div>
   );
@@ -62,19 +78,15 @@ export function GaugeBar({ min, max, healthyLow, healthyHigh, value, lowLabel, h
 
 export function SpeakerIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M11 5L6 9H2v6h4l5 4V5z" />
-      <path d="M15.5 8.5a5 5 0 010 7" />
-    </svg>
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src="/icons/audio_follow.svg" alt="" style={{ width: 16.9, height: 15.8 }} />
   );
 }
 
 function InfoIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="#1A237E">
-      <circle cx="7" cy="2.6" r="1.9" />
-      <rect x="5.2" y="5.8" width="3.6" height="7.4" rx="1.8" />
-    </svg>
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src="/icons/info.svg" alt="" style={{ width: 14, height: 23 }} />
   );
 }
 
@@ -144,7 +156,7 @@ export function ConceptTopChrome({ category, onSelectCategory, goToFollowUps, la
           })}
         </div>
         <button
-          className="w-[36px] h-[36px] rounded-full bg-[#DCE6FB] shadow-[0_2px_10px_rgba(30,40,90,0.08)] flex items-center justify-center cursor-pointer flex-shrink-0"
+          className="w-[34px] h-[34px] rounded-full bg-white shadow-[0_2px_10px_rgba(30,40,90,0.08)] flex items-center justify-center cursor-pointer flex-shrink-0"
           onClick={goToFollowUps}
           aria-label="More info"
         >

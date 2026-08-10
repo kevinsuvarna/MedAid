@@ -10,28 +10,8 @@ function RbcAvatar() {
     <img
       src="/icons/rbc.svg"
       alt=""
-      className="w-[46px] h-[46px] rounded-full flex-shrink-0 shadow-[0_3px_8px_rgba(239,83,80,0.3)]"
+      className="w-[44px] h-[44px] rounded-full flex-shrink-0 shadow-[0_3px_8px_rgba(239,83,80,0.3)]"
     />
-  );
-}
-
-// Down chevron that rotates to point up when the row is expanded — a real
-// stroked icon (1.5pt) rather than a text glyph, per the accordion redesign.
-function CaretIcon({ open }) {
-  return (
-    <svg
-      width={14}
-      height={14}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="#9CA3AF"
-      strokeWidth={1.5}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 200ms ease' }}
-    >
-      <path d="M6 9l6 6 6-6" />
-    </svg>
   );
 }
 
@@ -55,9 +35,9 @@ const TOTAL_RBC_GAUGE = {
 };
 
 const RBC_STATUS_TEXT = {
-  normal: 'Total RBC Count is in normal range',
-  low: 'Total RBC Count is lower than normal range',
-  high: 'Total RBC Count is higher than normal range',
+  normal: 'Total RBC Count is in the normal range',
+  low: 'Total RBC Count is slightly lower than normal range',
+  high: 'Total RBC Count is slightly higher than normal range',
   borderline: 'Total RBC Count is at the edge of normal range',
 };
 
@@ -179,9 +159,12 @@ export default function RBCConceptScreen({ reportData, t, langCode, audioMode })
         boxShadow: '0 8px 30px rgba(30,40,90,0.1), inset 0 1px 0 rgba(255,255,255,0.8)',
       }}
     >
-      <div className="bg-white rounded-[20px] shadow-[0_4px_16px_rgba(0,0,0,0.08)] p-5">
+      <div
+        className="bg-white rounded-[20px] shadow-[0_4px_16px_rgba(0,0,0,0.08)] p-3 mx-auto"
+        style={{ width: '287px', minHeight: '122px' }}
+      >
           <div className="flex items-center justify-between">
-            <div className="text-[18px] font-bold text-[#1A237E]">Red Blood Cells (RBC)</div>
+            <div className="text-[18px] font-bold" style={{ color: '#1E2350' }}>Red Blood Cells (RBC)</div>
             <button
               className="bg-transparent border-none cursor-pointer"
               onClick={playRbcSummary}
@@ -191,63 +174,97 @@ export default function RBCConceptScreen({ reportData, t, langCode, audioMode })
             </button>
           </div>
 
-          <div className="flex items-center gap-3 mt-4">
+          <div className="flex items-start gap-3 mt-2">
             <RbcAvatar />
-            <div>
-              <span className="text-[28px] font-bold text-[#1A237E]">{totalRbcParam ? totalRbcParam.value : '--'}</span>
-              <span className="text-[16px] text-[#9CA3AF] ml-1">{totalRbcParam ? totalRbcParam.unit : ''}</span>
+            <div className="flex-1 min-w-0">
+              <div>
+                <span className="text-[18.5px] font-bold text-[#1A237E]">{totalRbcParam ? totalRbcParam.value : '--'}</span>
+                <span className="text-[10px] text-[#9CA3AF] ml-1">{totalRbcParam ? totalRbcParam.unit : ''}</span>
+              </div>
+              {totalRbcParam && (
+                <>
+                  <GaugeBar
+                    min={TOTAL_RBC_GAUGE.min}
+                    max={TOTAL_RBC_GAUGE.max}
+                    healthyLow={TOTAL_RBC_GAUGE.healthyLow}
+                    healthyHigh={TOTAL_RBC_GAUGE.healthyHigh}
+                    value={totalRbcParam.value}
+                    lowLabel={TOTAL_RBC_GAUGE.lowLabel}
+                    healthyLabel={TOTAL_RBC_GAUGE.healthyLabel}
+                    highLabel={TOTAL_RBC_GAUGE.highLabel}
+                    trackWidth={201.5}
+                    trackHeight={3.97}
+                    marginTop={8}
+                    labelFontSize={7}
+                  />
+                  <div className="text-[8px] text-[#A8BAD4] mt-2">
+                    {RBC_STATUS_TEXT[totalRbcParam.rawFlag] || RBC_STATUS_TEXT.normal}
+                  </div>
+                </>
+              )}
             </div>
           </div>
-
-          {totalRbcParam && (
-            <>
-              <GaugeBar
-                min={TOTAL_RBC_GAUGE.min}
-                max={TOTAL_RBC_GAUGE.max}
-                healthyLow={TOTAL_RBC_GAUGE.healthyLow}
-                healthyHigh={TOTAL_RBC_GAUGE.healthyHigh}
-                value={totalRbcParam.value}
-                lowLabel={TOTAL_RBC_GAUGE.lowLabel}
-                healthyLabel={TOTAL_RBC_GAUGE.healthyLabel}
-                highLabel={TOTAL_RBC_GAUGE.highLabel}
-              />
-              <div className="text-[13px] text-[#6B7280] italic mt-4">
-                {RBC_STATUS_TEXT[totalRbcParam.rawFlag] || RBC_STATUS_TEXT.normal}
-              </div>
-            </>
-          )}
         </div>
 
         <div className="mt-6">
-          <div className="text-[11px] font-bold text-[#64748B] uppercase tracking-[0.08em] mb-2 px-1">
+          <div className="text-[8px] font-bold text-[#9CA3AF] uppercase tracking-[0.08em] mb-2 px-1">
             Parameters Measured
           </div>
-          <div className="flex flex-col gap-[10px]">
+          <div className="flex flex-col gap-[10px] items-center">
             {RBC_SUB_PARAMS.map((sub) => {
               const param = getParam(reportData, 'rbc', sub.id);
               if (!param) return null;
               const isOpen = expandedId === sub.id;
-              const isAbnormal = param.rawFlag !== 'normal';
+              const valueColor = isOpen ? '#454D59' : '#979AAE';
               return (
                 <div
                   key={sub.id}
-                  className="bg-white rounded-[16px] shadow-[0_3px_10px_rgba(30,40,90,0.06)] p-4 cursor-pointer"
-                  style={{ border: `1.5px solid ${isAbnormal ? '#90CAF9' : '#E2E8F0'}` }}
+                  className="bg-white rounded-[16px] shadow-[0_3px_10px_rgba(30,40,90,0.06)] px-3 cursor-pointer flex flex-col"
+                  style={{
+                    width: '278px',
+                    ...(isOpen
+                      ? { minHeight: '110px', paddingTop: '10px', paddingBottom: '10px' }
+                      : { height: '42.46px', justifyContent: 'center' }),
+                    borderWidth: '2.19px',
+                    borderStyle: 'solid',
+                    borderColor: '#E2E8F0',
+                  }}
                   onClick={() => toggleRow(sub.id)}
                 >
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="text-[15px] font-bold text-[#1A237E]">{sub.name}</div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <span className="text-[18px] font-bold text-[#1A237E]">
-                        {param.value}
-                        <span className="text-[13px] font-normal text-[#9E9E9E] ml-1">{param.unit}</span>
-                      </span>
-                      <CaretIcon open={isOpen} />
+                  <div className="relative flex items-center gap-3">
+                    <div
+                      className="text-[12.34px] font-bold leading-[1.2] flex-shrink-0 overflow-hidden text-ellipsis whitespace-nowrap"
+                      style={{ color: '#1E2350', maxWidth: '110px' }}
+                    >
+                      {sub.name}
+                    </div>
+                    <span
+                      className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap"
+                      style={{ color: valueColor }}
+                    >
+                      <span className="text-[12px] leading-[1.2]">{param.value}</span>
+                      <span className="text-[9px] font-normal ml-1 leading-[1.2]">{param.unit}</span>
+                    </span>
+                    <div className="flex items-center gap-1 ml-auto flex-shrink-0">
+                      {!isOpen && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={param.rawFlag === 'normal' ? '/icons/green_dot.svg' : '/icons/red_dot.svg'}
+                          alt=""
+                          style={{ width: 7, height: 7 }}
+                        />
+                      )}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={isOpen ? '/icons/down_arrow.svg' : '/icons/right_arrow.svg'}
+                        alt=""
+                        style={{ width: 6.5, height: 10.8 }}
+                      />
                     </div>
                   </div>
                   {isOpen && (
                     <>
-                      <div className="text-[13px] text-[#9E9E9E] mt-1">{sub.description}</div>
+                      <div className="text-[7px] mt-1 leading-[1.2]" style={{ color: '#64748B' }}>{sub.description}</div>
                       <GaugeBar
                         min={sub.min}
                         max={sub.max}
@@ -257,8 +274,13 @@ export default function RBCConceptScreen({ reportData, t, langCode, audioMode })
                         lowLabel={sub.lowLabel}
                         healthyLabel={sub.healthyLabel}
                         highLabel={sub.highLabel}
+                        trackWidth={247}
+                        trackHeight={3.97}
+                        labelFontSize={7}
+                        labelFontWeight={300}
+                        valueFontWeight={300}
                       />
-                      <div className="text-[13px] text-[#9E9E9E] mt-2 line-clamp-2">{bottomLineFor(sub)}</div>
+                      <div className="text-[7.5px] text-[#A8BAD4] mt-1 leading-[1.2] whitespace-nowrap overflow-hidden text-ellipsis">{bottomLineFor(sub)}</div>
                     </>
                   )}
                 </div>

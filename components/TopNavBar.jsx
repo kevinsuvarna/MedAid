@@ -14,7 +14,8 @@ export default function TopNavBar({ onBack, languageLabel, onLanguageClick }) {
         className="flex items-center gap-[6px] bg-[#EEF1FA] rounded-full px-3 py-[6px] cursor-pointer"
         onClick={onLanguageClick}
       >
-        <span className="text-[13px] text-[#3949AB]">🔊</span>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/icons/audio_follow.svg" alt="" style={{ width: 16.9, height: 15.8 }} />
         <span className="text-[12px] font-bold text-[#3949AB]">{languageLabel}</span>
       </div>
     </div>

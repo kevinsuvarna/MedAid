@@ -44,10 +44,15 @@ export default function LangScreen({ languages, onBack }) {
         onClick={() => handleTap(lang)}
       >
         <span
-          className="w-[36px] h-[36px] rounded-full bg-[#EEF0F5] text-[16px] flex items-center justify-center flex-shrink-0 cursor-pointer"
+          className="w-[36px] h-[36px] rounded-full bg-[#EEF0F5] flex items-center justify-center flex-shrink-0 cursor-pointer"
           onClick={lang.speak}
         >
-          🔊
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={isSelected ? '/icons/audio_selected.svg' : '/icons/audio_unselected.svg'}
+            alt=""
+            className="w-[18px] h-[18px]"
+          />
         </span>
         <div className="flex-1 min-w-0">
           <div className="text-[16px] font-bold text-[#1A237E] truncate">{lang.label}</div>

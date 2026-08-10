@@ -144,7 +144,8 @@ export default function DoctorQuestionsScreen({ t, langCode, reportData }) {
           disabled={loading || questions.length === 0}
           aria-label={t.listen}
         >
-          🔊
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/icons/audio_follow.svg" alt="" style={{ width: 16.9, height: 15.8 }} />
         </button>
       </div>
 

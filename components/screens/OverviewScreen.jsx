@@ -85,11 +85,8 @@ function FaceIcon({ size = 26, mood = 'happy' }) {
 
 function SpeakerIcon() {
   return (
-    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#1E1B4B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M11 5L6 9H2v6h4l5 4V5z" />
-      <path d="M15.5 8.5a5 5 0 010 7" />
-      <path d="M18 5.5a9 9 0 010 13" />
-    </svg>
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src="/icons/audio_follow.svg" alt="" style={{ width: 16.9, height: 15.8 }} />
   );
 }
 

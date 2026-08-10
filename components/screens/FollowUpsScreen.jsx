@@ -2,6 +2,12 @@ import { voiceCodeFor, SpeakerIcon } from '@/components/screens/WBCConceptScreen
 import { speak } from '@/lib/speech';
 import BackArrowIcon from '@/components/icons/BackArrowIcon';
 
+const SECTION_ICON_SRC = {
+  tests: '/icons/chem.svg',
+  newTests: '/icons/microscope.svg',
+  who: '/icons/doc.svg',
+};
+
 export default function FollowUpsScreen({
   t,
   sections,
@@ -48,7 +54,7 @@ export default function FollowUpsScreen({
         }}
       >
         <div className="flex items-center justify-between">
-          <div className="text-[20px] font-bold text-[#1A237E]">{t.followUpsTitle}</div>
+          <div className="text-[14.5px] font-bold text-[#1A237E]">{t.followUpsTitle}</div>
           <button
             className="w-8 h-8 rounded-full bg-white shadow-[0_1px_4px_rgba(0,0,0,0.1)] flex items-center justify-center flex-shrink-0 cursor-pointer border-none"
             onClick={speakAll}
@@ -61,14 +67,15 @@ export default function FollowUpsScreen({
         {sections.map((section) => (
           <div key={section.id} className="mt-[18px]">
             <div className="flex items-center gap-2 mb-[10px]">
-              <span className="text-[15px]">{section.icon}</span>
-              <span className="text-[14px] font-bold text-[#1A237E]">{section.heading}</span>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={SECTION_ICON_SRC[section.id]} alt="" style={{ width: 23, height: 24.5 }} />
+              <span className="text-[12px] font-bold text-[#1A237E]">{section.heading}</span>
             </div>
             <div className="flex flex-col gap-2">
               {section.items.map((item, i) => (
                 <div
                   key={i}
-                  className="bg-white rounded-[14px] shadow-[0_3px_10px_rgba(30,40,90,0.06)] px-4 py-[13px] text-[13.5px] leading-[1.4] text-[#333952]"
+                  className="bg-white rounded-[14px] shadow-[0_3px_10px_rgba(30,40,90,0.06)] px-4 py-[13px] text-[9.9px] leading-[1.4] text-[#333952]"
                 >
                   {item}
                 </div>
@@ -77,23 +84,31 @@ export default function FollowUpsScreen({
           </div>
         ))}
 
-        <div className="text-[12px] text-[#7A7F94] mt-[18px] mb-5">{t.followUpsDisclaimer}</div>
+        <div className="text-[9px] text-[#9CA3AF] mt-[18px] mb-5" style={{ width: '263px', height: '28px' }}>
+          {t.followUpsDisclaimer}
+        </div>
 
-        <div className="text-[16px] font-bold text-[#1A237E] mb-3">{t.askMyDocHeading}</div>
+        <div className="text-[14.5px] font-bold text-[#1A237E] mb-3">{t.askMyDocHeading}</div>
 
         <div
           className="flex items-center gap-3 bg-white rounded-[16px] shadow-[0_3px_10px_rgba(30,40,90,0.06)] px-4 py-[13px] cursor-pointer"
           onClick={goToAskMyDoc}
         >
           <div
-            className="w-[38px] h-[38px] rounded-full flex items-center justify-center text-[16px] text-white flex-shrink-0"
-            style={{ background: 'linear-gradient(135deg, #7B85D9 0%, #5A62C6 100%)' }}
+            className="flex items-center justify-center flex-shrink-0"
+            style={{
+              width: 30,
+              height: 30,
+              background: 'linear-gradient(135deg, #5D81C4, #403B74)',
+              borderRadius: '50%',
+            }}
           >
-            💬
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/icons/chat.svg" alt="" style={{ width: 15, height: 12 }} />
           </div>
           <div className="flex-1">
-            <div className="text-[14px] font-bold text-[#1A237E]">{t.askMyDocTitle}</div>
-            <div className="text-[12px] text-[#7A7F94] mt-[2px]">{t.askMyDocSubtitle}</div>
+            <div className="text-[12px] font-bold text-[#1A237E]">{t.askMyDocTitle}</div>
+            <div className="text-[8px] text-[#7A7F94] mt-[2px]">{t.askMyDocSubtitle}</div>
           </div>
           <div className="text-[16px] text-[#9CA3AF]">›</div>
         </div>

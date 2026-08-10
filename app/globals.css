@@ -4,9 +4,10 @@
 
 html,
 body {
-  margin: 0;
-  padding: 0;
-  background: #E9E2DC;
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-color: #E8EAF6;
 }
 
 body {
@@ -16,6 +17,8 @@ body {
 }
 
 * {
+  margin: 0;
+  padding: 0;
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
 }
