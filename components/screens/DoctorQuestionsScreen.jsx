@@ -4,7 +4,7 @@ import { speak, stopSpeech } from '@/lib/speech';
 import { callGroq } from '@/lib/groqClient';
 import { USE_MOCK, MOCK_DOCTOR_QUESTIONS } from '@/lib/config';
 
-const PARAM_LABELS = {
+export const PARAM_LABELS = {
   rbcCount: 'Total RBC Count',
   hb: 'Haemoglobin',
   pcv: 'PCV/HCT',
@@ -25,13 +25,13 @@ const PARAM_LABELS = {
 const DOCTOR_QUESTIONS_SYSTEM_PROMPT =
   "You are a helpful medical assistant. Based on a patient's CBC report, suggest 3 to 5 simple questions they should ask their doctor. Use plain language. Number each question. No medical jargon.";
 
-function flagWord(flag) {
+export function flagWord(flag) {
   if (flag === 'below') return 'low';
   if (flag === 'above') return 'high';
   return 'normal';
 }
 
-function allParamRows(reportData) {
+export function allParamRows(reportData) {
   const rows = [];
   ['rbc', 'wbc', 'plt'].forEach((cat) => {
     (CATEGORY_PARAM_IDS[cat] || []).forEach((id) => {

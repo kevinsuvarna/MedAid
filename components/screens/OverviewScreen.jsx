@@ -6,7 +6,7 @@ const LANG_VOICE_CODE = {
   हिन्दी: 'Hin',
   తెలుగు: 'Tel',
   ಕನ್ನಡ: 'Kan',
-  മലയാളం: 'Mal',
+  മലയാളം: 'Mal',
   தமிழ்: 'Tam',
 };
 
@@ -19,6 +19,15 @@ const CATEGORY_INFO = {
   rbc: { name: 'Red Blood Cells', desc: 'Gives energy & carries oxygen', ringColor: '#EF5350' },
   wbc: { name: 'White Blood Cells', desc: 'Fights infections & viruses', ringColor: '#5C6BC0' },
   plt: { name: 'Platelets', desc: 'Stops bleeding & heals wounds', ringColor: '#FFB300' },
+};
+
+// Happy/good mood already has a curved smile baked into these images; the
+// neutral/flat moods still fall back to the hand-drawn FaceIcon below so the
+// smile curvature can keep varying with severity.
+const CATEGORY_SMILEY_IMG = {
+  rbc: '/images/RBC_smiley.png',
+  wbc: '/images/WBC_smiley.png',
+  plt: '/images/Platelet_smiley.png',
 };
 
 const STATUS_PILL_STYLE = {
@@ -82,7 +91,32 @@ function FaceIcon({ size = 26, mood = 'happy' }) {
   );
 }
 
+function SpeakerIcon() {
+  return (
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#1E1B4B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M11 5L6 9H2v6h4l5 4V5z" />
+      <path d="M15.5 8.5a5 5 0 010 7" />
+      <path d="M18 5.5a9 9 0 010 13" />
+    </svg>
+  );
+}
+
+function ChevronIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 18l6-6-6-6" />
+    </svg>
+  );
+}
+
 function CategoryIcon({ id, status }) {
+  const mood = moodFor(status);
+  if (mood === 'happy') {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img src={CATEGORY_SMILEY_IMG[id]} alt="" className="w-[42px] h-[42px] rounded-full flex-shrink-0" />
+    );
+  }
   const info = CATEGORY_INFO[id];
   const badge =
     id === 'rbc' ? (
@@ -100,14 +134,14 @@ function CategoryIcon({ id, status }) {
       </svg>
     );
   return (
-    <div className="relative w-[44px] h-[44px] flex-shrink-0">
+    <div className="relative w-[42px] h-[42px] flex-shrink-0">
       <div
-        className="w-[44px] h-[44px] rounded-full flex items-center justify-center"
+        className="w-[42px] h-[42px] rounded-full flex items-center justify-center"
         style={{ background: info.ringColor }}
       >
-        <FaceIcon mood={moodFor(status)} />
+        <FaceIcon mood={mood} size={22} />
       </div>
-      <div className="absolute -top-[2px] -right-[2px] w-[18px] h-[18px] rounded-full bg-white flex items-center justify-center shadow-[0_2px_6px_rgba(0,0,0,0.15)]">
+      <div className="absolute -top-[2px] -right-[2px] w-[16px] h-[16px] rounded-full bg-white flex items-center justify-center shadow-[0_2px_6px_rgba(0,0,0,0.15)]">
         {badge}
       </div>
     </div>
@@ -171,69 +205,89 @@ export default function OverviewScreen({ categories, reportData, languageLabel, 
       <div className="text-[22px] font-bold text-[#1E1B4B] text-center mt-4">Hello, {patientId}</div>
       <div className="text-[13px] text-[#64748B] text-center mt-1">Here is the quick overview of your blood test</div>
 
-      <div className="relative flex flex-col flex-1 mx-auto mt-6 mb-[14px] w-[90%] bg-white/85 rounded-[24px] shadow-[0_8px_24px_rgba(26,35,126,0.14)] px-5 pt-5 pb-5 overflow-y-auto">
+      <div
+        className="relative flex flex-col flex-1 mx-auto mt-6 mb-[14px] w-[90%] rounded-[28px] pt-[22px] px-[18px] pb-[18px] overflow-y-auto"
+        style={{
+          background: 'linear-gradient(155deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.28) 100%)',
+          backdropFilter: 'blur(18px) saturate(160%)',
+          WebkitBackdropFilter: 'blur(18px) saturate(160%)',
+          border: '1px solid rgba(255,255,255,0.65)',
+          boxShadow: '0 8px 30px rgba(35,45,90,0.15), inset 0 1px 0 rgba(255,255,255,0.8)',
+        }}
+      >
         <div className="flex items-center justify-between">
-          <div className="text-[18px] font-bold text-[#1E1B4B]">Report Summary</div>
+          <div className="text-[19px] font-extrabold text-[#1E1B4B]">Report Summary</div>
           <button
-            className="bg-transparent border-none cursor-pointer text-[#1E1B4B]"
+            className="bg-transparent border-none cursor-pointer"
             onClick={handleNarrate}
             aria-label="Listen"
           >
-            🔊
+            <SpeakerIcon />
           </button>
         </div>
 
         <div
-          className="flex items-center gap-3 rounded-[14px] py-[10px] px-[14px] mt-4"
-          style={{ background: hexToRgba(overallStyle.bg, 0.7), border: `1px solid ${hexToRgba(overallStyle.text, 0.12)}` }}
+          className="flex items-center gap-3 rounded-[18px] py-[22px] px-[14px] mt-5"
+          style={{
+            background: `linear-gradient(155deg, ${hexToRgba(overallStyle.bg, 0.85)}, ${hexToRgba(overallStyle.bg, 0.5)})`,
+            border: `1px solid ${hexToRgba(overallStyle.text, 0.15)}`,
+          }}
         >
-          <div
-            className="w-[44px] h-[44px] rounded-full flex items-center justify-center flex-shrink-0"
-            style={{ background: overallStyle.smiley }}
-          >
-            <FaceIcon mood={overallStyle.mood} />
-          </div>
+          {overallStyle.mood === 'happy' ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src="/images/Overall_smiley.png" alt="" className="w-[38px] h-[38px] rounded-full flex-shrink-0" />
+          ) : (
+            <div
+              className="w-[38px] h-[38px] rounded-full flex items-center justify-center flex-shrink-0"
+              style={{ background: overallStyle.smiley }}
+            >
+              <FaceIcon mood={overallStyle.mood} size={20} />
+            </div>
+          )}
           <div>
-            <div className="text-[14px] font-extrabold text-[#20244F]">{overallTitle}</div>
-            <div className="text-[11px] font-medium text-[#64748B] mt-[1px]">{overallSubtext}</div>
+            <div className="text-[14.5px] font-extrabold text-[#20244F]">{overallTitle}</div>
+            <div className="text-[12px] font-medium text-[#64748B] mt-[1px]">{overallSubtext}</div>
           </div>
         </div>
 
-        <div className="flex flex-col gap-4 mt-14">
+        <div className="flex flex-col gap-5 mt-8">
           {groupStatuses.map((cat) => {
             const info = CATEGORY_INFO[cat.id];
             const pill = STATUS_PILL_STYLE[cat.status];
             return (
               <div
                 key={cat.id}
-                className="flex items-center gap-3 rounded-[14px] py-[10px] px-[14px] cursor-pointer shadow-[0_4px_16px_rgba(0,0,0,0.06)]"
+                className="flex items-center gap-3 rounded-[18px] py-[11px] px-[14px] cursor-pointer shadow-[0_1px_3px_rgba(35,45,90,0.06)]"
                 style={{
-                  background: '#FFFFFF',
-                  border: `1.5px solid ${hexToRgba(pill.text, 0.4)}`,
+                  background: 'rgba(255,255,255,0.75)',
+                  border: `1px solid ${hexToRgba(pill.text, 0.35)}`,
                 }}
                 onClick={cat.select}
               >
                 <CategoryIcon id={cat.id} status={cat.status} />
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[14px] font-bold text-[#1E1B4B]">{info.name}</span>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[13px] font-bold text-[#1E1B4B] whitespace-nowrap">{info.name}</span>
                     <span
-                      className="text-[8.5px] font-bold rounded-[6px] px-[7px] py-[2px] flex-shrink-0"
+                      className="text-[10px] font-bold rounded-[8px] px-[9px] py-[3px] flex-shrink-0"
                       style={{ background: pill.bg, color: pill.labelText }}
                     >
                       {pill.label}
                     </span>
                   </div>
-                  <div className="text-[11px] text-[#64748B] mt-[2px]">{info.desc}</div>
+                  <div className="text-[11.5px] text-[#64748B] mt-[2px] whitespace-nowrap overflow-hidden text-ellipsis">
+                    {info.desc}
+                  </div>
                 </div>
-                <div className="text-[16px] text-[#9CA3AF] flex-shrink-0">›</div>
+                <ChevronIcon />
               </div>
             );
           })}
         </div>
-      </div>
 
-      <div className="text-[12px] text-[#9CA3AF] text-center mb-4">Tap one to Explore</div>
+        <div className="flex-1 min-h-4" />
+        <div className="text-[12.5px] text-[#64748B] text-center mt-3">Tap one to explore</div>
+      </div>
     </div>
   );
 }

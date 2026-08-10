@@ -18,6 +18,7 @@ import WBCDifferentialScreen from '@/components/screens/WBCDifferentialScreen';
 import AskScreen from '@/components/screens/AskScreen';
 import ExplanationScreen from '@/components/screens/ExplanationScreen';
 import FollowUpsScreen from '@/components/screens/FollowUpsScreen';
+import AskMyDocScreen from '@/components/screens/AskMyDocScreen';
 import FAQScreen from '@/components/screens/FAQScreen';
 import DoctorQuestionsScreen from '@/components/screens/DoctorQuestionsScreen';
 import WhyMeasuredScreen from '@/components/screens/WhyMeasuredScreen';
@@ -233,6 +234,8 @@ export default function CbcApp() {
       speak(wbcDifferentialNarrationText(), lang.code);
     } else if (screen === 'followUps') {
       speak(followUpsNarrationText(), lang.code);
+    } else if (screen === 'askMyDoc') {
+      speak(t.askMyDocTitle + '. ' + t.askMyDocSubtitle, lang.code);
     } else if (screen === 'saved') {
       speak(t.savedHeading + '. ' + t.savedBody, lang.code);
     }
@@ -314,6 +317,10 @@ export default function CbcApp() {
   function goToDoctorQuestions() {
     pushHistory();
     setScreen('doctorQuestions');
+  }
+  function goToAskMyDoc() {
+    pushHistory();
+    setScreen('askMyDoc');
   }
   function goToWhyMeasured() {
     pushHistory();
@@ -518,10 +525,22 @@ export default function CbcApp() {
 
   return (
     <PhoneFrame
-      showProgress={screen !== 'lang' && screen !== 'opening' && screen !== 'overview'}
+      showProgress={
+        screen !== 'lang' &&
+        screen !== 'opening' &&
+        screen !== 'overview' &&
+        screen !== 'concept' &&
+        screen !== 'followUps' &&
+        screen !== 'askMyDoc'
+      }
       progressSteps={progressSteps}
       topBar={
-        screen !== 'lang' && screen !== 'opening' && screen !== 'overview' ? (
+        screen !== 'lang' &&
+        screen !== 'opening' &&
+        screen !== 'overview' &&
+        screen !== 'concept' &&
+        screen !== 'followUps' &&
+        screen !== 'askMyDoc' ? (
           <TopNavBar onBack={goBack} languageLabel={`Voice: ${lang.short}`} onLanguageClick={goToLangScreen} />
         ) : null
       }
@@ -572,6 +591,11 @@ export default function CbcApp() {
           langCode={lang.code}
           goToFaq={goToFaq}
           goToAsk={goToAsk}
+          onSelectCategory={selectCategory}
+          goToFollowUps={goToFollowUps}
+          languageLabel={lang.label}
+          onBack={goBack}
+          onLanguageClick={goToLangScreen}
         />
       )}
 
@@ -622,7 +646,28 @@ export default function CbcApp() {
         />
       )}
 
-      {screen === 'followUps' && <FollowUpsScreen backToAsk={backToAsk} t={t} sections={followUpsSections} />}
+      {screen === 'followUps' && (
+        <FollowUpsScreen
+          t={t}
+          sections={followUpsSections}
+          onBack={goBack}
+          onLanguageClick={goToLangScreen}
+          languageLabel={lang.label}
+          langCode={lang.code}
+          goToAskMyDoc={goToAskMyDoc}
+        />
+      )}
+
+      {screen === 'askMyDoc' && (
+        <AskMyDocScreen
+          t={t}
+          langCode={lang.code}
+          reportData={reportData}
+          onBack={goBack}
+          onLanguageClick={goToLangScreen}
+          languageLabel={lang.label}
+        />
+      )}
 
       {screen === 'faq' && <FAQScreen backToConcept={backToConcept} />}
 
