@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { PARAMS, WBC_DIFFERENTIAL } from '@/lib/data';
+import { tierForGroup } from '@/lib/reportAdapter';
 import { speak, stopSpeech } from '@/lib/speech';
 
 const SUMMARY_CELLS = [
@@ -7,13 +7,6 @@ const SUMMARY_CELLS = [
   { id: 'wbc', label1: 'Defense:' },
   { id: 'plt', label1: 'Clotting:' },
 ];
-
-function tierFor(id) {
-  if (id === 'wbc') {
-    return WBC_DIFFERENTIAL.some((seg) => seg.flag !== 'within') ? 'amber' : 'green';
-  }
-  return PARAMS[id].flag === 'within' ? 'green' : 'amber';
-}
 
 function statusLabelFor(tier) {
   if (tier === 'green') return 'All Good';
@@ -32,6 +25,7 @@ function CheckCircleIcon() {
 
 export default function OpeningScreen({
   t,
+  reportData,
   exploreReport,
   audioMode,
   enableAudioMode,
@@ -43,7 +37,7 @@ export default function OpeningScreen({
   const [isPlaying, setIsPlaying] = useState(false);
   const isFirstRender = useRef(true);
 
-  const cellTiers = SUMMARY_CELLS.map((cell) => ({ ...cell, tier: tierFor(cell.id) }));
+  const cellTiers = SUMMARY_CELLS.map((cell) => ({ ...cell, tier: tierForGroup(reportData, cell.id) }));
 
   const narrationText = cellTiers.map((cell) => `${cell.label1} ${statusLabelFor(cell.tier)}`).join('. ');
 
@@ -75,11 +69,9 @@ export default function OpeningScreen({
     window.print();
   }
 
-  const [reportTypeLabel, reportDatePart] = (t.reportMeta || '')
-    .split('·')
-    .map((s) => s.trim());
-  const reportSubtitle = (reportTypeLabel || 'Complete Blood Count').replace(/\s*\(CBC\)\s*/i, '');
-  const reportDateTime = [reportDatePart, '09:30 AM'].filter(Boolean).join(' • ');
+  const reportSubtitle = 'Complete Blood Count';
+  const patientDate = reportData && reportData.patient ? reportData.patient.date : null;
+  const reportDateTime = [patientDate, '09:30 AM'].filter(Boolean).join(' • ');
 
   return (
     <div
