@@ -192,6 +192,10 @@ const TOTAL_WBC_GAUGE = {
   highLabel: 'HIGH (11000)',
 };
 
+function formatUnit(unit) {
+  return unit ? unit.replace(/cumm/g, 'cu. mm') : unit;
+}
+
 const WBC_STATUS_TEXT = {
   normal: 'Total WBC Count is in normal range',
   low: 'Total WBC Count is lower than normal range',
@@ -319,7 +323,7 @@ export default function WBCConceptScreen({ reportData, t, langCode, audioMode })
             <WbcAvatar />
             <div>
               <span className="text-[28px] font-bold text-[#1A237E]">{totalWbcParam ? totalWbcParam.value : '--'}</span>
-              <span className="text-[16px] text-[#9CA3AF] ml-1">{totalWbcParam ? totalWbcParam.unit : ''}</span>
+              <span className="text-[16px] text-[#9CA3AF] ml-1">{totalWbcParam ? formatUnit(totalWbcParam.unit) : ''}</span>
             </div>
           </div>
 
@@ -335,7 +339,7 @@ export default function WBCConceptScreen({ reportData, t, langCode, audioMode })
                 healthyLabel={TOTAL_WBC_GAUGE.healthyLabel}
                 highLabel={TOTAL_WBC_GAUGE.highLabel}
               />
-              <div className="text-[13px] text-[#6B7280] italic mt-4">
+              <div className="text-[13px] text-[#A8BAD4] mt-4">
                 {WBC_STATUS_TEXT[totalWbcParam.rawFlag] || WBC_STATUS_TEXT.normal}
               </div>
             </>
@@ -359,12 +363,12 @@ export default function WBCConceptScreen({ reportData, t, langCode, audioMode })
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="text-[15px] font-bold text-[#1A237E]">{sub.name}</div>
-                      <div className="text-[11px] text-[#64748B] mt-[2px]">{sub.description}</div>
+                      <div className="text-[15px] font-bold text-[#1E2350]">{sub.name}</div>
+                      {isOpen && <div className="text-[11px] text-[#64748B] mt-[2px]">{sub.description}</div>}
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
                       <span className="text-[14px] text-[#6B7280]">
-                        {param.value} <span className="text-[11px]">{param.unit}</span>
+                        {param.value} <span className="text-[11px]">{formatUnit(param.unit)}</span>
                       </span>
                       {!isOpen && (
                         <span
@@ -372,7 +376,12 @@ export default function WBCConceptScreen({ reportData, t, langCode, audioMode })
                           style={{ background: dotColorForFlag(param.rawFlag) }}
                         />
                       )}
-                      <span className="text-[16px] text-[#9CA3AF] flex-shrink-0">{isOpen ? '⌄' : '›'}</span>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={isOpen ? '/icons/down_arrow.svg' : '/icons/right_arrow.svg'}
+                        alt=""
+                        style={{ width: 6.5, height: 10.8 }}
+                      />
                     </div>
                   </div>
                   {isOpen && (
