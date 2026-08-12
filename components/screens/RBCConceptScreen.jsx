@@ -267,7 +267,7 @@ export default function RBCConceptScreen({ reportData, t, langCode, audioMode })
                   </div>
                   {isOpen && (
                     <div className="mt-3">
-                      <div className="text-[11px] leading-[1.2]" style={{ color: '#64748B' }}>{sub.description}</div>
+                      <div className="text-[11px]" style={{ color: '#64748B' }}>{sub.description}</div>
                       <GaugeBar
                         min={sub.min}
                         max={sub.max}

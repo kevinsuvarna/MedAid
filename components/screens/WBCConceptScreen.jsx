@@ -323,7 +323,7 @@ export default function WBCConceptScreen({ reportData, t, langCode, audioMode })
             <WbcAvatar />
             <div>
               <span className="text-[28px] font-bold text-[#1A237E]">{totalWbcParam ? totalWbcParam.value : '--'}</span>
-              <span className="text-[16px] text-[#9CA3AF] ml-1">{totalWbcParam ? formatUnit(totalWbcParam.unit) : ''}</span>
+              <span className="text-[10px] text-[#9CA3AF] ml-1">{totalWbcParam ? formatUnit(totalWbcParam.unit) : ''}</span>
             </div>
           </div>
 
@@ -361,15 +361,18 @@ export default function WBCConceptScreen({ reportData, t, langCode, audioMode })
                   className="bg-white rounded-[16px] shadow-[0_3px_10px_rgba(30,40,90,0.06)] p-4 cursor-pointer"
                   onClick={() => toggleRow(sub.id)}
                 >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-[15px] font-bold text-[#1E2350]">{sub.name}</div>
-                      {isOpen && <div className="text-[11px] text-[#64748B] mt-[2px]">{sub.description}</div>}
+                  <div className="relative flex items-center gap-3">
+                    <div
+                      className="text-[15px] font-bold leading-[1.2] flex-shrink-0 overflow-hidden text-ellipsis whitespace-nowrap"
+                      style={{ color: '#1E2350', maxWidth: '110px' }}
+                    >
+                      {sub.name}
                     </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <span className="text-[14px] text-[#6B7280]">
-                        {param.value} <span className="text-[11px]">{formatUnit(param.unit)}</span>
-                      </span>
+                    <span className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-[#6B7280]">
+                      <span className="text-[14px]">{param.value}</span>
+                      <span className="text-[11px] ml-1">{formatUnit(param.unit)}</span>
+                    </span>
+                    <div className="flex items-center gap-1 ml-auto flex-shrink-0">
                       {!isOpen && (
                         <span
                           className="w-[10px] h-[10px] rounded-full flex-shrink-0"
@@ -386,6 +389,7 @@ export default function WBCConceptScreen({ reportData, t, langCode, audioMode })
                   </div>
                   {isOpen && (
                     <div className="mt-3">
+                      <div className="text-[11px] text-[#64748B]">{sub.description}</div>
                       <GaugeBar
                         min={sub.min}
                         max={sub.max}
@@ -395,9 +399,10 @@ export default function WBCConceptScreen({ reportData, t, langCode, audioMode })
                         lowLabel={sub.lowLabel}
                         healthyLabel={sub.healthyLabel}
                         highLabel={sub.highLabel}
+                        labelFontWeight={300}
+                        valueFontWeight={300}
                       />
-                      <div className="text-[11px] text-[#1A1A2E] mt-2 truncate">{sub.fact}</div>
-                      {sub.food && <div className="text-[11px] text-[#6B7280] mt-1 truncate">{sub.food}</div>}
+                      <div className="text-[11px] text-[#A8BAD4] mt-2 truncate">{sub.fact}</div>
                     </div>
                   )}
                 </div>
