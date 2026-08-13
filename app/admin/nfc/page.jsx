@@ -19,11 +19,19 @@ export default function WriteNfcPage() {
     setStatus({ type: 'writing' });
 
     try {
+      // Insert must land — and be confirmed — before the tag is ever written.
+      // Racing these (e.g. via Promise.all) risks the physical tag ending up
+      // with a URL whose row failed to commit; a tag write can't be undone,
+      // so a report_id burned onto a tag must always resolve to a real row.
+      const { error: insertError } = await supabaseClient.from('reports').insert({ id: uuid, pdf_url: pdfUrl });
+      if (insertError) throw insertError;
+
       const ndef = new NDEFReader();
-      await Promise.all([
-        ndef.write({ records: [{ recordType: 'url', data: appUrl }] }),
-        supabaseClient.from('reports').insert({ id: uuid, pdf_url: pdfUrl }),
-      ]);
+      // overwrite: true replaces the tag's entire NDEF message (any old
+      // report_id/url record included) instead of appending to it — the
+      // tag's hardware UID is separate and unrelated; this only clears its
+      // stored content, which is the URL record we control.
+      await ndef.write({ records: [{ recordType: 'url', data: appUrl }] }, { overwrite: true });
       setStatus({ type: 'done', appUrl });
     } catch (err) {
       setStatus({ type: 'error', message: err.message });
