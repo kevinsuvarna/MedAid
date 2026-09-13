@@ -106,7 +106,12 @@ function CategoryIcon({ id }) {
 }
 
 export default function OverviewScreen({ categories, reportData, languageLabel, langCode, onBack, onLanguageClick }) {
-  const patientId = (reportData && reportData.patient && reportData.patient.id) || '2342';
+  // reportData.patient never has an `id` field — extraction (both the regex
+  // parser and the vision path) only ever returns name/age/sex/date. `name`
+  // itself can legitimately be null (redacted/unreadable patient header), in
+  // which case the greeting just drops the name rather than showing a
+  // placeholder value.
+  const patientName = reportData && reportData.patient && reportData.patient.name;
 
   const groupStatuses = categories.map((cat) => ({ ...cat, status: groupStatusFor(reportData, cat.id) }));
   const abnormalGroups = groupStatuses.filter((g) => g.status === 'low' || g.status === 'high');
@@ -159,7 +164,7 @@ export default function OverviewScreen({ categories, reportData, languageLabel, 
         </div>
       </div>
 
-      <div className="text-[22px] font-bold text-[#1E1B4B] text-center mt-4">Hello, {patientId}</div>
+      <div className="text-[22px] font-bold text-[#1E1B4B] text-center mt-4">{patientName ? `Hello, ${patientName}` : 'Hello'}</div>
       <div className="text-[13px] text-[#64748B] text-center mt-1">Here is the quick overview of your blood test</div>
 
       <div
