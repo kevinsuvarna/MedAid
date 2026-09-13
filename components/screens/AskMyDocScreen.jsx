@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { voiceCodeFor, SpeakerIcon } from '@/components/screens/WBCConceptScreen';
 import { PARAM_LABELS, flagWord, allParamRows } from '@/components/screens/DoctorQuestionsScreen';
 import { speak } from '@/lib/speech';
-import { callGroq } from '@/lib/groqClient';
+import { callOpenAiText } from '@/lib/openaiClient';
 import BackArrowIcon from '@/components/icons/BackArrowIcon';
 
 const ASK_MY_DOC_SYSTEM_PROMPT =
@@ -39,7 +39,7 @@ export default function AskMyDocScreen({ t, langCode, reportData, onBack, onLang
         .map((row) => `${PARAM_LABELS[row.id] || row.id}: ${row.value} ${row.unit} (${flagWord(row.flag)})`)
         .join('; ');
       const userPrompt = `CBC results: ${valuesList}. Suggest short questions this patient could ask their doctor.`;
-      const text = await callGroq(ASK_MY_DOC_SYSTEM_PROMPT, userPrompt);
+      const text = await callOpenAiText(ASK_MY_DOC_SYSTEM_PROMPT, userPrompt);
       if (!cancelled) {
         setSuggested(parseQuestions(text));
         setSuggestedLoading(false);

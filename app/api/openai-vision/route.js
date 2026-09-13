@@ -1,6 +1,6 @@
 // Dedicated route for CBC report image extraction via OpenAI's vision model.
-// Kept separate from /api/groq (which still serves the app's other Groq
-// text calls) rather than folding a second provider into that route.
+// Kept separate from /api/openai-text (plain-text generation, no images, no
+// strict JSON schema) rather than folding both use cases into one route.
 export const maxDuration = 30;
 
 const MODEL = 'gpt-4o-mini';

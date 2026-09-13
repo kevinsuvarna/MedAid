@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getParam, CATEGORY_PARAM_IDS } from '@/lib/reportAdapter';
 import { speak, stopSpeech } from '@/lib/speech';
-import { callGroq } from '@/lib/groqClient';
+import { callOpenAiText } from '@/lib/openaiClient';
 
 export const PARAM_LABELS = {
   rbcCount: 'Total RBC Count',
@@ -44,7 +44,7 @@ export function allParamRows(reportData) {
 // Human-readable labels for reportData's own leaf keys (haemoglobin,
 // rbc_count, total_wbc, ...) — a different naming scheme from PARAM_LABELS
 // above, which is keyed by reportAdapter's internal ids (hb, rbcCount,
-// totalWbc, ...). Used to build the Groq prompt straight from reportData's
+// totalWbc, ...). Used to build the model prompt straight from reportData's
 // raw value/unit/ref_low/ref_high/flag, since that's what MOCK_DATA (the
 // reportData this screen gets in dev) actually contains — getParam()
 // re-derives low/high from canonical ranges and drops the report's own
@@ -84,7 +84,7 @@ function buildReportValuesList(reportData) {
   return lines.join('\n');
 }
 
-// Groq is asked to return only numbered questions with no preamble, but the
+// The model is asked to return only numbered questions with no preamble, but the
 // split still tolerates a stray intro line or a response with no numbering
 // at all (e.g. the "Could not load response" fallback) by falling back to
 // treating the whole reply as a single question.
@@ -115,7 +115,7 @@ export default function DoctorQuestionsScreen({ t, langCode, reportData }) {
     async function load() {
       const valuesList = buildReportValuesList(reportData);
       const userPrompt = `CBC report values and flags:\n${valuesList}\nGenerate questions the patient should ask their doctor about abnormal values only.`;
-      const text = await callGroq(DOCTOR_QUESTIONS_SYSTEM_PROMPT, userPrompt);
+      const text = await callOpenAiText(DOCTOR_QUESTIONS_SYSTEM_PROMPT, userPrompt);
       if (!cancelled) {
         setQuestions(parseQuestions(text));
         setLoading(false);
