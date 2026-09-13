@@ -95,6 +95,7 @@ export default function OpeningScreen({ t, reportData, exploreReport, audioMode,
             </svg>
           </div>
         </div>
+        <div className="text-[20px] font-extrabold text-[#1A237E] mt-2 tracking-wide">Sehat Seva</div>
       </div>
 
       <svg className="w-full pointer-events-none" height="28" viewBox="0 0 390 28" preserveAspectRatio="none">

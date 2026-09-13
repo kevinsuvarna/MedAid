@@ -30,7 +30,7 @@ const notoSansTelugu = Noto_Sans_Telugu({
 });
 
 export const metadata = {
-  title: 'MedAid — CBC Report',
+  title: 'Sehat Seva — CBC Report',
   description: 'Understand your Complete Blood Count report, explained simply.',
 };
 
