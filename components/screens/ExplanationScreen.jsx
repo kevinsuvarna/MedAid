@@ -10,7 +10,7 @@ export default function ExplanationScreen({
   giveFeedback,
 }) {
   return (
-    <div className="flex flex-col flex-1 pt-4 px-[22px] pb-[22px]" style={{ animation: 'fadeIn 0.3s ease' }}>
+    <div className="flex flex-col flex-1 pt-4 px-[22px] pb-[22px]">
       <div className="text-[19px] font-extrabold text-[#1A1A2E]">{t.explanationTitle}</div>
       <div className="text-[14.5px] text-[#6B7280] mt-[6px] font-bold">{explanationParamLabel}</div>
 

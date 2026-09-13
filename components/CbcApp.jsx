@@ -1,13 +1,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { LANG_META, T } from '@/lib/translations';
 import { CAT_DEFS, SCREEN_STEP, FACTS, CATEGORY_TAGLINES } from '@/lib/data';
 import { getParam, getWbcDifferentialRows } from '@/lib/reportAdapter';
-import { extractReportData, clearReportCache } from '@/lib/pdfExtractor';
+import { extractReportData, clearReportCache, PARSER_VERSION } from '@/lib/pdfExtractor';
 import { USE_MOCK, MOCK_DATA } from '@/lib/config';
+import { getCachedReport, cacheReport } from '@/src/utils/reportCache';
 import { speak, stopSpeech, startVoiceInput as startVoiceInputHelper } from '@/lib/speech';
 import PhoneFrame from '@/components/PhoneFrame';
+import ScreenTransition from '@/components/ScreenTransition';
 import TopNavBar from '@/components/TopNavBar';
 import LangScreen from '@/components/screens/LangScreen';
 import OpeningScreen from '@/components/screens/OpeningScreen';
@@ -18,12 +21,12 @@ import WBCDifferentialScreen from '@/components/screens/WBCDifferentialScreen';
 import AskScreen from '@/components/screens/AskScreen';
 import ExplanationScreen from '@/components/screens/ExplanationScreen';
 import FollowUpsScreen from '@/components/screens/FollowUpsScreen';
+import AskMyDocScreen from '@/components/screens/AskMyDocScreen';
 import FAQScreen from '@/components/screens/FAQScreen';
 import DoctorQuestionsScreen from '@/components/screens/DoctorQuestionsScreen';
 import WhyMeasuredScreen from '@/components/screens/WhyMeasuredScreen';
 import SavedScreen from '@/components/screens/SavedScreen';
 import LoadingScreen from '@/components/screens/LoadingScreen';
-import ReportErrorScreen from '@/components/screens/ReportErrorScreen';
 
 const WBC_NORMAL_GREENS = ['#2ECC71', '#27AE60', '#1E8449'];
 const WBC_HIGH_COLOR = '#E74C3C';
@@ -61,11 +64,12 @@ function flagBgFor(flag) {
   return '#E9F7EF';
 }
 
-export default function CbcApp({ initialScreen = 'lang', initialCategory = null, preview = false } = {}) {
-  const [screen, setScreen] = useState(initialScreen);
+export default function CbcApp() {
+  const searchParams = useSearchParams();
+  const [screen, setScreen] = useState('opening');
   const [langId, setLangId] = useState('en');
   const [audioMode, setAudioMode] = useState(false);
-  const [category, setCategory] = useState(initialCategory);
+  const [category, setCategory] = useState(null);
   const [narrateIndex, setNarrateIndex] = useState(-1);
   const [narrateAskIndex, setNarrateAskIndex] = useState(-1);
   const [askTranscript, setAskTranscript] = useState('');
@@ -75,20 +79,71 @@ export default function CbcApp({ initialScreen = 'lang', initialCategory = null,
   const [history, setHistory] = useState([]);
   const [selectedParam, setSelectedParam] = useState(null);
   const [reportData, setReportData] = useState(null);
-  const [loadState, setLoadState] = useState(preview ? 'ready' : 'loading');
+  const [loadState, setLoadState] = useState('loading');
+  const [loadMessage, setLoadMessage] = useState('Reading your report…');
+  const [errorMessage, setErrorMessage] = useState('');
 
   async function loadReport({ forceRefresh = false } = {}) {
-    setLoadState('loading');
-    if (USE_MOCK) {
+    const reportId = searchParams.get('report_id');
+
+    // report_id always takes priority over USE_MOCK — a report link should
+    // show that report's real values regardless of the mock flag. USE_MOCK
+    // only governs the no-report_id fallback below.
+    if (!reportId && USE_MOCK) {
+      setLoadState('loading');
       setReportData(MOCK_DATA);
       setLoadState('ready');
       return;
     }
-    const data = await extractReportData({ forceRefresh });
+
+    if (!reportId) {
+      // STEP 3 — no report_id: existing static/manually-placed report.pdf flow.
+      setLoadState('loading');
+      setLoadMessage('Reading your report…');
+      const data = await extractReportData({ forceRefresh });
+      if (data) {
+        setReportData(data);
+        setLoadState('ready');
+      } else {
+        setErrorMessage('Could not read report. Please check the file and try again.');
+        setLoadState('error');
+      }
+      return;
+    }
+
+    // STEP 2 — report_id present: try the cache first, skipping all network calls on a hit.
+    // A version mismatch means the cached data was parsed by older, since-
+    // fixed logic — treat that the same as a cache miss.
+    if (!forceRefresh) {
+      const cached = await getCachedReport(reportId);
+      if (cached && cached.__parserVersion === PARSER_VERSION) {
+        setReportData(cached.data);
+        setLoadState('ready');
+        return;
+      }
+    }
+
+    setLoadState('loading');
+    setLoadMessage('Opening your report…');
+    let pdfArrayBuffer;
+    try {
+      const res = await fetch(`/api/report?id=${encodeURIComponent(reportId)}`);
+      if (!res.ok) throw new Error(`Fetch failed with status ${res.status}`);
+      pdfArrayBuffer = await res.arrayBuffer();
+    } catch (e) {
+      setErrorMessage('Could not find this report. Check your link and try again.');
+      setLoadState('error');
+      return;
+    }
+
+    setLoadMessage('Reading values…');
+    const data = await extractReportData({ arrayBuffer: pdfArrayBuffer });
     if (data) {
+      await cacheReport(reportId, { __parserVersion: PARSER_VERSION, data });
       setReportData(data);
       setLoadState('ready');
     } else {
+      setErrorMessage('Could not read report values. Please try again.');
       setLoadState('error');
     }
   }
@@ -99,7 +154,6 @@ export default function CbcApp({ initialScreen = 'lang', initialCategory = null,
   }
 
   useEffect(() => {
-    if (preview) return;
     loadReport();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -234,6 +288,8 @@ export default function CbcApp({ initialScreen = 'lang', initialCategory = null,
       speak(wbcDifferentialNarrationText(), lang.code);
     } else if (screen === 'followUps') {
       speak(followUpsNarrationText(), lang.code);
+    } else if (screen === 'askMyDoc') {
+      speak(t.askMyDocTitle + '. ' + t.askMyDocSubtitle, lang.code);
     } else if (screen === 'saved') {
       speak(t.savedHeading + '. ' + t.savedBody, lang.code);
     }
@@ -274,11 +330,11 @@ export default function CbcApp({ initialScreen = 'lang', initialCategory = null,
   function selectLanguage(id) {
     pushHistory();
     setLangId(id);
-    setScreen('opening');
+    setScreen('overview');
   }
   function exploreReport() {
     pushHistory();
-    setScreen('overview');
+    setScreen('lang');
   }
   function listenToReport() {
     pushHistory();
@@ -298,6 +354,10 @@ export default function CbcApp({ initialScreen = 'lang', initialCategory = null,
     setScreen('overview');
     setCategory(null);
   }
+  function backToLang() {
+    popHistory();
+    setScreen('lang');
+  }
   function goToResult() {
     pushHistory();
     setSelectedParam(null);
@@ -315,6 +375,10 @@ export default function CbcApp({ initialScreen = 'lang', initialCategory = null,
   function goToDoctorQuestions() {
     pushHistory();
     setScreen('doctorQuestions');
+  }
+  function goToAskMyDoc() {
+    pushHistory();
+    setScreen('askMyDoc');
   }
   function goToWhyMeasured() {
     pushHistory();
@@ -505,33 +569,56 @@ export default function CbcApp({ initialScreen = 'lang', initialCategory = null,
   if (loadState === 'loading') {
     return (
       <PhoneFrame showProgress={false}>
-        <LoadingScreen />
+        <LoadingScreen text={loadMessage} />
       </PhoneFrame>
     );
   }
   if (loadState === 'error') {
     return (
       <PhoneFrame showProgress={false}>
-        <ReportErrorScreen onRetry={retryLoadReport} />
+        <div className="flex flex-1 flex-col items-center justify-center gap-4 px-[22px] text-center">
+          <div className="w-[64px] h-[64px] rounded-full bg-[#FDEDEB] flex items-center justify-center text-[28px]">
+            ⚠
+          </div>
+          <div className="text-[16px] font-bold text-[#1A1A2E]">{errorMessage}</div>
+          <button
+            className="bg-[#E8735A] text-white border-none rounded-[26px] px-6 py-3 text-[15px] font-bold cursor-pointer min-h-[48px] shadow-[0_6px_18px_rgba(232,115,90,0.32)] mt-2"
+            onClick={retryLoadReport}
+          >
+            Retry
+          </button>
+        </div>
       </PhoneFrame>
     );
   }
 
   return (
     <PhoneFrame
-      showProgress={screen !== 'lang'}
+      showProgress={
+        screen !== 'lang' &&
+        screen !== 'opening' &&
+        screen !== 'overview' &&
+        screen !== 'concept' &&
+        screen !== 'followUps' &&
+        screen !== 'askMyDoc'
+      }
       progressSteps={progressSteps}
       topBar={
-        screen !== 'lang' ? (
+        screen !== 'lang' &&
+        screen !== 'opening' &&
+        screen !== 'overview' &&
+        screen !== 'concept' &&
+        screen !== 'followUps' &&
+        screen !== 'askMyDoc' ? (
           <TopNavBar onBack={goBack} languageLabel={`Voice: ${lang.short}`} onLanguageClick={goToLangScreen} />
         ) : null
       }
     >
-      {screen === 'lang' && <LangScreen languages={languages} />}
+      <ScreenTransition screenKey={screen}>
+      {screen === 'lang' && <LangScreen languages={languages} onBack={goBack} />}
 
       {screen === 'opening' && (
         <OpeningScreen
-          languageLabel={lang.label}
           t={t}
           patientReportLabel={patientReportLabel}
           reportMeta={reportMetaLine}
@@ -544,7 +631,16 @@ export default function CbcApp({ initialScreen = 'lang', initialCategory = null,
         />
       )}
 
-      {screen === 'overview' && <OverviewScreen t={t} categories={categories} reportData={reportData} />}
+      {screen === 'overview' && (
+        <OverviewScreen
+          categories={categories}
+          reportData={reportData}
+          languageLabel={lang.label}
+          langCode={lang.code}
+          onBack={backToLang}
+          onLanguageClick={goToLangScreen}
+        />
+      )}
 
       {screen === 'concept' && (
         <ConceptScreen
@@ -562,6 +658,11 @@ export default function CbcApp({ initialScreen = 'lang', initialCategory = null,
           langCode={lang.code}
           goToFaq={goToFaq}
           goToAsk={goToAsk}
+          onSelectCategory={selectCategory}
+          goToFollowUps={goToFollowUps}
+          languageLabel={lang.label}
+          onBack={goBack}
+          onLanguageClick={goToLangScreen}
         />
       )}
 
@@ -612,11 +713,34 @@ export default function CbcApp({ initialScreen = 'lang', initialCategory = null,
         />
       )}
 
-      {screen === 'followUps' && <FollowUpsScreen backToAsk={backToAsk} t={t} sections={followUpsSections} />}
+      {screen === 'followUps' && (
+        <FollowUpsScreen
+          t={t}
+          sections={followUpsSections}
+          onBack={goBack}
+          onLanguageClick={goToLangScreen}
+          languageLabel={lang.label}
+          langCode={lang.code}
+          goToAskMyDoc={goToAskMyDoc}
+        />
+      )}
+
+      {screen === 'askMyDoc' && (
+        <AskMyDocScreen
+          t={t}
+          langCode={lang.code}
+          reportData={reportData}
+          onBack={goBack}
+          onLanguageClick={goToLangScreen}
+          languageLabel={lang.label}
+        />
+      )}
 
       {screen === 'faq' && <FAQScreen backToConcept={backToConcept} />}
 
-      {screen === 'doctorQuestions' && <DoctorQuestionsScreen t={t} langCode={lang.code} reportData={reportData} />}
+      {screen === 'doctorQuestions' && (
+        <DoctorQuestionsScreen t={t} langCode={lang.code} reportData={reportData} />
+      )}
 
       {screen === 'whyMeasured' && <WhyMeasuredScreen category={category} langCode={lang.code} t={t} />}
 
@@ -636,6 +760,7 @@ export default function CbcApp({ initialScreen = 'lang', initialCategory = null,
       {screen === 'saved' && (
         <SavedScreen t={t} exploreAnotherPart={exploreAnotherPart} savedCategoryCards={savedCategoryCards} />
       )}
+      </ScreenTransition>
     </PhoneFrame>
   );
 }

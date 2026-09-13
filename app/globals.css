@@ -4,16 +4,21 @@
 
 html,
 body {
-  margin: 0;
-  padding: 0;
-  background: #E9E2DC;
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-color: #E8EAF6;
 }
 
 body {
-  font-family: var(--font-noto-sans), var(--font-noto-sans-devanagari), var(--font-noto-sans-telugu), sans-serif;
+  font-family: var(--font-poppins), var(--font-noto-sans), var(--font-noto-sans-devanagari),
+    var(--font-noto-sans-telugu), sans-serif;
+  font-weight: 500;
 }
 
 * {
+  margin: 0;
+  padding: 0;
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
 }
@@ -47,6 +52,14 @@ a:hover {
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
+}
+@keyframes conceptSlideInFromRight {
+  from { opacity: 0; transform: translateX(28px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes conceptSlideInFromLeft {
+  from { opacity: 0; transform: translateX(-28px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 @keyframes ringPulse {
   0%, 100% { opacity: 0.6; transform: scale(1); }

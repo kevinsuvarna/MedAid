@@ -1,5 +1,12 @@
-import { Noto_Sans, Noto_Sans_Devanagari, Noto_Sans_Telugu } from 'next/font/google';
+import { Poppins, Noto_Sans, Noto_Sans_Devanagari, Noto_Sans_Telugu } from 'next/font/google';
 import './globals.css';
+
+const poppins = Poppins({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-poppins',
+  display: 'swap',
+});
 
 const notoSans = Noto_Sans({
   subsets: ['latin'],
@@ -30,11 +37,15 @@ export const metadata = {
 export const viewport = {
   width: 'device-width',
   initialScale: 1,
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${notoSans.variable} ${notoSansDevanagari.variable} ${notoSansTelugu.variable}`}>
+    <html
+      lang="en"
+      className={`${poppins.variable} ${notoSans.variable} ${notoSansDevanagari.variable} ${notoSansTelugu.variable}`}
+    >
       <body>{children}</body>
     </html>
   );

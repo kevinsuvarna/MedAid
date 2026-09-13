@@ -1,45 +1,117 @@
-export default function FollowUpsScreen({ backToAsk, t, sections }) {
+import { voiceCodeFor, SpeakerIcon } from '@/components/screens/WBCConceptScreen';
+import { speak } from '@/lib/speech';
+import BackArrowIcon from '@/components/icons/BackArrowIcon';
+
+const SECTION_ICON_SRC = {
+  tests: '/icons/chem.svg',
+  newTests: '/icons/microscope.svg',
+  who: '/icons/doc.svg',
+};
+
+export default function FollowUpsScreen({
+  t,
+  sections,
+  onBack,
+  onLanguageClick,
+  languageLabel,
+  langCode,
+  goToAskMyDoc,
+}) {
+  function speakAll() {
+    const text = [t.followUpsTitle, ...sections.flatMap((s) => [s.heading, ...s.items])].join('. ');
+    speak(text, langCode);
+  }
+
   return (
-    <div className="flex flex-col flex-1 min-h-0 overflow-y-auto pt-4 px-[22px] pb-[22px]" style={{ animation: 'fadeIn 0.3s ease' }}>
-      <div className="flex items-center gap-[10px]">
-        <div className="text-[24px] text-[#6B7280] cursor-pointer p-1" onClick={backToAsk}>‹</div>
-        <div className="text-[19px] font-extrabold text-[#1A1A2E]">{t.followUpsTitle}</div>
+    <div
+      className="flex flex-col flex-1 min-h-0 overflow-y-auto pb-[22px]"
+      style={{ background: 'linear-gradient(160deg, #E4E9FA 0%, #F1EEFB 45%, #FDF6F0 100%)' }}
+    >
+      <div className="flex items-center justify-between px-[22px] pt-[26px]">
+        <button
+          className="flex items-center justify-center text-[#1A237E] bg-transparent border-none cursor-pointer"
+          onClick={onBack}
+          aria-label="Back"
+        >
+          <BackArrowIcon />
+        </button>
+        <div
+          className="flex items-center gap-[6px] bg-white rounded-full px-3 py-[6px] cursor-pointer shadow-[0_4px_12px_rgba(26,35,126,0.12)]"
+          onClick={onLanguageClick}
+        >
+          <span className="text-[12px] font-bold text-[#1A237E]">Voice: {voiceCodeFor(languageLabel)}</span>
+        </div>
       </div>
 
-      <div className="flex flex-col gap-4 mt-5">
+      <div
+        className="rounded-[26px] p-[18px] mt-4 mx-[22px]"
+        style={{
+          background: 'rgba(255,255,255,0.5)',
+          backdropFilter: 'blur(18px)',
+          WebkitBackdropFilter: 'blur(18px)',
+          border: '1px solid rgba(255,255,255,0.7)',
+          boxShadow: '0 8px 30px rgba(30,40,90,0.1), inset 0 1px 0 rgba(255,255,255,0.8)',
+        }}
+      >
+        <div className="flex items-center justify-between">
+          <div className="text-[14.5px] font-bold text-[#1A237E]">{t.followUpsTitle}</div>
+          <button
+            className="w-8 h-8 rounded-full bg-white shadow-[0_1px_4px_rgba(0,0,0,0.1)] flex items-center justify-center flex-shrink-0 cursor-pointer border-none"
+            onClick={speakAll}
+            aria-label={t.listen}
+          >
+            <SpeakerIcon />
+          </button>
+        </div>
+
         {sections.map((section) => (
-          <div key={section.id} className="bg-white rounded-[18px] p-[18px] shadow-[0_4px_16px_rgba(0,0,0,0.08)]">
-            <div className="flex items-center gap-[10px]">
-              <span className="text-[20px]">{section.icon}</span>
-              <span className="flex-1 text-[15.5px] font-bold text-[#1A1A2E]">{section.heading}</span>
-              <div
-                className="w-8 h-8 rounded-full bg-[#FBE4DA] flex items-center justify-center flex-shrink-0 cursor-pointer"
-                onClick={section.speak}
-              >
-                <span className="text-[13px]">🔊</span>
-              </div>
+          <div key={section.id} className="mt-[18px]">
+            <div className="flex items-center gap-2 mb-[10px]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={SECTION_ICON_SRC[section.id]} alt="" style={{ width: 23, height: 24.5 }} />
+              <span className="text-[12px] font-bold text-[#1A237E]">{section.heading}</span>
             </div>
-            <div className="flex flex-col gap-2 mt-3">
+            <div className="flex flex-col gap-2">
               {section.items.map((item, i) => (
                 <div
                   key={i}
-                  className="bg-[#FDF6F0] rounded-[12px] px-3 py-[10px] text-[13.5px] text-[#1A1A2E] font-medium leading-[1.5]"
+                  className="bg-white rounded-[14px] shadow-[0_3px_10px_rgba(30,40,90,0.06)] px-4 py-[13px] text-[9.9px] leading-[1.4] text-[#333952]"
                 >
                   {item}
                 </div>
               ))}
             </div>
-            {section.disclaimer && (
-              <div className="text-[12px] text-[#9CA3AF] font-medium mt-3">{section.disclaimer}</div>
-            )}
           </div>
         ))}
-      </div>
 
-      <div className="mt-5">
-        <button className="w-full bg-[#F9F3EF] text-[#9E8A7D] border-[1.5px] border-[#F0DCD3] rounded-2xl p-[15px] text-[13.5px] font-bold cursor-default">
-          {t.explanationDoctorCta}
-        </button>
+        <div className="text-[9px] text-[#9CA3AF] mt-[18px] mb-5" style={{ width: '263px', height: '28px' }}>
+          {t.followUpsDisclaimer}
+        </div>
+
+        <div className="text-[14.5px] font-bold text-[#1A237E] mb-3">{t.askMyDocHeading}</div>
+
+        <div
+          className="flex items-center gap-3 bg-white rounded-[16px] shadow-[0_3px_10px_rgba(30,40,90,0.06)] px-4 py-[13px] cursor-pointer"
+          onClick={goToAskMyDoc}
+        >
+          <div
+            className="flex items-center justify-center flex-shrink-0"
+            style={{
+              width: 30,
+              height: 30,
+              background: 'linear-gradient(135deg, #5D81C4, #403B74)',
+              borderRadius: '50%',
+            }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/icons/chat.svg" alt="" style={{ width: 15, height: 12 }} />
+          </div>
+          <div className="flex-1">
+            <div className="text-[12px] font-bold text-[#1A237E]">{t.askMyDocTitle}</div>
+            <div className="text-[8px] text-[#7A7F94] mt-[2px]">{t.askMyDocSubtitle}</div>
+          </div>
+          <div className="text-[16px] text-[#9CA3AF]">›</div>
+        </div>
       </div>
     </div>
   );

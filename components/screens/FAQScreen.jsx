@@ -27,7 +27,7 @@ export default function FAQScreen() {
   const [openIndex, setOpenIndex] = useState(null);
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 overflow-y-auto pt-4 px-[22px] pb-[22px]" style={{ animation: 'fadeIn 0.3s ease' }}>
+    <div className="flex flex-col flex-1 min-h-0 overflow-y-auto pt-4 px-[22px] pb-[22px]">
       <div className="text-[19px] font-extrabold text-[#1A1A2E]">Common Questions</div>
       <div className="text-[14px] text-[#9CA3AF] mt-[6px] font-medium">Tap a question to see the answer</div>
 

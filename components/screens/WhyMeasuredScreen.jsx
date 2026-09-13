@@ -103,10 +103,7 @@ export default function WhyMeasuredScreen({ category, langCode, t }) {
   }
 
   return (
-    <div
-      className="flex flex-col flex-1 min-h-0 overflow-y-auto pt-4 px-[22px] pb-[22px]"
-      style={{ animation: 'fadeIn 0.3s ease' }}
-    >
+    <div className="flex flex-col flex-1 min-h-0 overflow-y-auto pt-4 px-[22px] pb-[22px]">
       <div className="flex items-center justify-between gap-[10px]">
         <div className="text-[19px] font-extrabold text-[#1A1A2E]">{content.title}</div>
         <button
